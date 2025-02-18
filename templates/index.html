@@ -11,12 +11,15 @@
         </form>
         <table>
             <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Session</th>
-                <th>Number</th>
-                <th>Contents</th>
+                <th style="width:70%">Contents</th>
+                <th>Distance</th>
             </tr>
+            {% for split in splits %}
+                <tr>
+                    <td>{{ split[0] }}</td>
+                    <td style="text-align: center">{{ split[1]|round(2) }}</td>
+                </tr>
+            {% endfor %}
         </table>
     </body>
 </html>
