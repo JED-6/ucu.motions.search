@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/Styling.css') }}">
         <title>Search UCU Congress Motions</title>
     </head>
     <body>
@@ -10,16 +11,20 @@
             <input type="submit" value="Check motion">
         </form>
         <table>
-            <tr>
-                <th style="width:70%">Contents</th>
-                <th>Distance</th>
-            </tr>
-            {% for split in splits %}
+            <thead>
                 <tr>
-                    <td>{{ split[0] }}</td>
-                    <td style="text-align: center">{{ split[1]|round(2) }}</td>
+                    <th>Contents</th>
+                    <th>Distance</th>
                 </tr>
-            {% endfor %}
+            </thead>
+            <tbody>
+                {% for split in splits %}
+                    <tr>
+                        <td style="width:70%">{{ split[0] }}</td>
+                        <td style="text-align: center">{{ split[1]|round(2) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
         </table>
     </body>
 </html>
