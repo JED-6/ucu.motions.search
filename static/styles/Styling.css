@@ -1,3 +1,59 @@
+body {
+  font-family: Arial;
+  margin-left: 100px;
+  margin-right: 100px;
+}
+
+#search_results {
+  margin-top: 20px;
+}
+
+h1 {
+  color: #2b135e;
+}
+
+table {
+  width: 100%;
+}
+
 table, th, td {
-    border: 1px solid black;
-  }
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 5px;
+}
+
+form {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+}
+
+textarea {
+  field-sizing: content;
+  max-height: 3lh;
+  min-height: 1lh;
+  max-width: 600px;
+  min-width: 200px;
+
+  background-color: #fffce2;
+  border-radius: 5px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 5px;
+  margin-right: 5px;
+}
+
+input[type=submit] {
+  border-radius: 5px;
+  border-width: 1px;
+  border-style: solid;
+
+  background-color: #e74898;
+  color: white;
+  border-color: #c63e83;
+  padding: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+
+  cursor: pointer;
+}

@@ -6,27 +6,29 @@
     </head>
     <body>
         <h1>Search UCU Motions</h1>
-        <form action="/" method="POST">
-            <input type="text" name="content" id="content">
-            <input type="submit" value="Check motion">
-        </form>
-        <table>
-            <thead>
-                <tr>
-                    <th>Contents</th>
-                    <th>Distance</th>
-                    <th>Links</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for split in splits %}
+        <div id="search_results">
+            <form action="/" method="POST">
+                <textarea name="content" id="content", placeholder="Search motions ..."></textarea>
+                <input type="submit" value="Check motion">
+            </form>
+            <table>
+                <thead>
                     <tr>
-                        <td style="width:60%">{{ split[0] }}</td>
-                        <td style="text-align: center">{{ split[1]|round(2) }}</td>
-                        <td><a href={{ split[2] }}>{{ split[3] }}</a></td>
+                        <th style="width:60%">Contents</th>
+                        <th style="width:10%">Distance</th>
+                        <th>Links</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for split in splits %}
+                        <tr>
+                            <td >{{ split[0] }}</td>
+                            <td style="text-align: center">{{ split[1]|round(2) }}</td>
+                            <td><a href={{ split[2] }}>{{ split[3] }}</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </body>
 </html>
