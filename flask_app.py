@@ -12,9 +12,9 @@ def hello_world():
         motions_content = request.form["content"]
         collection = ss.initialise_model()
         splits = ss.compare(motions_content,collection,10)
-        return render_template("index.html",splits=zip(splits["documents"],splits["distances"],splits["links"],splits["Title"]))
+        return render_template("index.html",splits=zip(splits["documents"],splits["distances"],splits["links"],splits["Title"]),motions_content=motions_content)
     else:
-        return render_template("index.html",splits=[])
+        return render_template("index.html",splits=[],motions_content="")
 
 if __name__=="__main__":
     app.run(debug=True)
