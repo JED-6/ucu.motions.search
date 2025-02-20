@@ -1,6 +1,5 @@
 import pandas as pd
 import re
-from sentence_similarity import initialise_model
 import chromadb
 from chromadb.utils import embedding_functions
 import math
@@ -18,14 +17,14 @@ def split_motion(text):
 
 def split_motions():
     df = pd.read_excel("Data/UCU_Motions_2024-2006.xlsx")
-    split_motions = {"Contents":[],"ID":[],"index":[]}
+    split_motions = {"Contents":[],"Link Number":[],"index":[]}
     for m in range(0,len(df)):
-        splits = split_motion(df.iloc[m,6])
+        splits = split_motion(df["Contents"].iloc[m])
         split_motions["Contents"] = split_motions["Contents"] + splits
-        split_motions["ID"] = split_motions["ID"] + [df.iloc[m,11] for f in range(0,len(splits))]
+        split_motions["Link Number"] = split_motions["Link Number"] + [df["Link Number"].iloc[m] for f in range(0,len(splits))]
     split_motions["index"] = [f for f in range(0,len(split_motions["Contents"]))]
     split_motions = pd.DataFrame(split_motions)
-    split_motions.to_excel("Data/UCU Split Motions 2024-2006.xlsx")
+    split_motions.to_excel("Data/UCU_Split_Motions_2024-2006.xlsx")
 
     
     CHROMA_DATA_PATH = "Data/embeddings/"

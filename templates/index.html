@@ -15,13 +15,15 @@
                 <tr>
                     <th>Contents</th>
                     <th>Distance</th>
+                    <th>Links</th>
                 </tr>
             </thead>
             <tbody>
                 {% for split in splits %}
                     <tr>
-                        <td style="width:70%">{{ split[0] }}</td>
+                        <td style="width:60%">{{ split[0] }}</td>
                         <td style="text-align: center">{{ split[1]|round(2) }}</td>
+                        <td><a href={{ split[2] }}>{{ split[3] }}</a></td>
                     </tr>
                 {% endfor %}
             </tbody>
