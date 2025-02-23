@@ -1,8 +1,8 @@
-import pandas as pd
 import re
 import chromadb
 from chromadb.utils import embedding_functions
 import math
+from project_code.models import Split, Motion, db
 
 def split_motion(text):
     splits_O = re.split("\n *(?:i+|[a-z]+|[0-9]+)\\. *",text)
@@ -16,25 +16,30 @@ def split_motion(text):
     return(splits_T)
 
 def split_motions():
-    df = pd.read_excel("Data/UCU_Motions_2024-2006.xlsx")
-    split_motions = {"Contents":[],"Link Number":[],"index":[]}
-    for m in range(0,len(df)):
-        splits = split_motion(df["Contents"].iloc[m])
-        split_motions["Contents"] = split_motions["Contents"] + splits
-        split_motions["Link Number"] = split_motions["Link Number"] + [df["Link Number"].iloc[m] for f in range(0,len(splits))]
-    split_motions["index"] = [f for f in range(0,len(split_motions["Contents"]))]
-    split_motions = pd.DataFrame(split_motions)
-    split_motions.to_excel("Data/UCU_Split_Motions_2024-2006.xlsx")
-
+    motions = Motion.query.with_entities(Motion.id,Motion.content).all()
+    id = 0
+    for motion in motions:
+        splits = split_motion(motion.content)
+        for s in splits:
+            if len(s)>0:
+                split = Split(id=id,content=s,motion_id=motion.id)
+                db.session.add(split)
+                id += 1
+    db.session.commit()
     
+    #create embedding collection
     CHROMA_DATA_PATH = "Data/embeddings/"
     MODEL = "all-mpnet-base-v2"
     COLLECTION_NAME = "splits_embeddings"
     client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
     embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL)
-    client.delete_collection(name=COLLECTION_NAME)
     collection = client.create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
-    for f in range(0,math.ceil(len(split_motions["Contents"])/5000)):
-        collection.add(documents=split_motions["Contents"][f*5000:min((f+1)*5000,len(split_motions["Contents"]))].tolist(),
-                       ids=split_motions["index"][f*5000:min((f+1)*5000,len(split_motions["Contents"]))].astype(str).tolist())
+
+    #embed splits
+    query = Split.query.with_entities(Split.id,Split.content).order_by(Split.id).all()
+    ids = [s.id for s in query]
+    splits = [s.content for s in query]
+    for f in range(0,math.ceil(len(splits)/5000)):
+        collection.add(documents=splits[f*5000:min((f+1)*5000,len(splits))],
+                       ids=list(map(str,ids[f*5000:min((f+1)*5000,len(ids))])))
     return (True)

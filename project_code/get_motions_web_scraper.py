@@ -1,7 +1,7 @@
 import math
 import requests
-import xlsxwriter
 from bs4 import BeautifulSoup
+from project_code.models import Motion, db
 
 def scrape_motions():
     start_id = 7925
@@ -10,46 +10,35 @@ def scrape_motions():
 
     attributes = ["motion_title","session","meeting_link","meeting_date","status","motion_number","motion_text",
                 "proposing_body","amended","sub_committee","notes","ref"]
-
-    workbook = xlsxwriter.Workbook("Data/UCU_Motions_2024-2006.xlsx")
-    worksheet = workbook.add_worksheet()
-
-    titles = ["Title","Session","Meeting","Date","Status","Number","Contents","Proposer","Amendment Status","Subcommittee","Notes","ID","Link Number"]
-    column = 0
-    for title in titles:
-        worksheet.write(0, column, title)
-        column += 1
-
-    motions = []
-    row = 1
     completed = 0
+    motions = 0
     print("Scraping Motions ...")
     try:
         for motion_num in range(start_id,end_id):
             r = requests.get(motion_url+str(motion_num))
             soup = BeautifulSoup(r.content,"html.parser")
             if soup.find("p", class_="alert alert-error") is None:
-                column = 0
-                motion = []
+                motion = dict.fromkeys(attributes)
                 for att in attributes:
                     extract = soup.find("dd", class_=att)
                     if extract is not None:
                         for line_break in extract.find_all("br"):
                             line_break.replace_with("\n")
-                        motion.append(extract.get_text())
-                        worksheet.write(row, column, extract.get_text())
-                    column += 1
-                motion.append(motion_num)
-                worksheet.write(row, column, motion_num)
-                motions.append(motion)
-                row += 1
+                        motion[att] = extract.get_text()
+                if motion["status"] == "Yes":
+                    status = True
+                else:
+                    status = False
+                new_motion = Motion(id=motion_num,title=motion["motion_title"],session=motion["session"],meeting=motion["meeting_link"],date=motion["meeting_date"],
+                                    status=motion["status"],number=motion["motion_number"],content=motion["motion_text"],proposer=motion["proposing_body"],amended=status,
+                                    subcommittee=motion["sub_committee"],notes=motion["notes"],listing=motion["ref"])
+                db.session.add(new_motion)
+                motions += 1
             if completed <= math.floor(((motion_num-start_id)/(end_id-start_id))*10):
                 completed += 1
                 print(math.floor(((motion_num-start_id)/(end_id-start_id))*100),"% complete ...")
+        db.session.commit()
         print("100% complete")
     except:
         print("Something whent wrong!")
-    workbook.close()
-    print(len(motions)," motions scraped from UCU website")
-
-scrape_motions()
+    print(motions," motions scraped from UCU website")

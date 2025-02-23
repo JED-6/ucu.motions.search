@@ -1,0 +1,36 @@
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
+
+#run in console to create db
+#from flask_app import app
+#from project_code.models import db
+#app.app_context().push()
+#db.create_all()
+#exit()
+
+class Motion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(150))
+    session = db.Column(db.String(9))
+    meeting = db.Column(db.String(80))
+    date = db.Column(db.String(20))
+    status = db.Column(db.String(100))
+    number = db.Column(db.String(10))
+    content = db.Column(db.Text,nullable=False)
+    proposer = db.Column(db.Text)
+    amended = db.Column(db.Boolean)
+    subcommittee = db.Column(db.String(60))
+    notes = db.Column(db.Text)
+    listing = db.Column(db.String(30))
+    splits = db.relationship("Split", backref="motion")
+
+    def __repr__(self):
+        return "<Motion " + self.title + ">"
+    
+class Split(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text,nullable=False)
+    motion_id = db.Column(db.Integer,db.ForeignKey("motion.id"))
+
+    def __repr__(self):
+        return "<Split " + self.id + ">"
