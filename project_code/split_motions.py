@@ -15,7 +15,7 @@ def split_motion(text):
             splits_T = splits_T[:-1]
     return(splits_T)
 
-def split_motions():
+def split_motions(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
     motions = Motion.query.with_entities(Motion.id,Motion.content).all()
     id = 0
     for motion in motions:
@@ -28,9 +28,6 @@ def split_motions():
     db.session.commit()
     
     #create embedding collection
-    CHROMA_DATA_PATH = "Data/embeddings/"
-    MODEL = "all-mpnet-base-v2"
-    COLLECTION_NAME = "splits_embeddings"
     client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
     embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL)
     collection = client.create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
