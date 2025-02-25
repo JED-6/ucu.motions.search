@@ -9,7 +9,15 @@
         <div id="search_results">
             <form action="/" method="POST">
                 <textarea name="content" id="content", placeholder="Search motions ...">{{ motions_content }}</textarea>
-                <input type="submit" value="Check motion">
+                <br>
+                <label for="search_method">Select Search Method:</label>
+                <br>
+                <select name="search_method" id = "search_method">
+                    <option value="all_mpnet_base_v2">all-mpnet-base-v2</option>
+                    <option value="tf_idf">if.idf</option>
+                </select>
+                <br>
+                <input type="submit" value="Search Motions">
             </form>
             <table>
                 <thead>

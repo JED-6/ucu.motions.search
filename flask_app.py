@@ -10,10 +10,11 @@ db = db.init_app(app)
 
 @app.route('/', methods=["POST","GET"])
 def search():
+    global COLLECTION_INITIALIZED
     if request.method == "POST":
-        method = "tf_idf"
         motions_content = request.form["content"]
-        if method == "collection_encoding":
+        method = request.form["search_method"]
+        if method == "all_mpnet_base_v2":
             if not COLLECTION_INITIALIZED:
                 collection = ss.initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME)
                 COLLECTION_INITIALIZED = True
