@@ -12,6 +12,7 @@ db = db.init_app(app)
 @app.route('/', methods=["POST","GET"])
 def search():
     global COLLECTION_INITIALIZED
+    global collection
     if request.method == "POST":
         motions_content = request.form["content"]
         method = request.form["search_method"]

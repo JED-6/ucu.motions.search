@@ -43,4 +43,4 @@ def split_motions(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
     for f in range(0,math.ceil(len(splits)/5000)):
         collection.add(documents=splits[f*5000:min((f+1)*5000,len(splits))],
                        ids=list(map(str,ids[f*5000:min((f+1)*5000,len(ids))])))
-    return ("True")
+    return (True)
