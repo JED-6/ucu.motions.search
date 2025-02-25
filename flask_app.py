@@ -23,7 +23,6 @@ def search():
         elif method == "tf_idf":
             result = ss.calc_tf_idf(motions_content)
         splits = ss.get_split_details(result,UCU_WEBSITE_URL)
-        
         return render_template("index.html",splits=zip(splits["documents"],splits["distances"],splits["links"],splits["Title"]),motions_content=motions_content)
     else:
         return render_template("index.html",splits=[],motions_content="")

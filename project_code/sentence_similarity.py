@@ -13,8 +13,8 @@ def get_split_details(result,UCU_WEBSITE_URL):
     result["links"] = [UCU_WEBSITE_URL+str(id) for id in motion_ids]
 
     motions = Motion.query.with_entities(Motion.id,Motion.title).filter(Motion.id.in_(motion_ids)).all()
-    motions = sorted(motions, key=lambda m: motion_ids.index(m.id))
-    result["Title"] = [ motion.title for motion in motions]
+    motions = [[m.id for m in motions],[m.title for m in motions]]
+    result["Title"] = [motions[1][motions[0].index(id)]  for id in motion_ids]
     return result
 
 def compare(sentence,collection,n_closest):
