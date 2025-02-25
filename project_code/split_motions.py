@@ -5,14 +5,19 @@ import math
 from project_code.models import Split, Motion, db
 
 def split_motion(text):
-    splits_O = re.split("\n *(?:i+|[a-z]+|[0-9]+)\\. *",text)
+    splits_O = re.split("\n *(?=i+\\.|iv\\.|vi*\\.|ix*\\.|[a-zA-Z]\\.|[0-9]+\\. )",text)
     splits_T = []
     for s in range(0,len(splits_O)):
         splits_O[s] = re.sub("\n"," ",splits_O[s])
         splits_O[s] = re.sub(" *$","",splits_O[s])
-        splits_T = splits_T + re.split("\\. *", splits_O[s])
-        if len(splits_T[-1]) == 0:
-            splits_T = splits_T[:-1]
+        splits_T = splits_T + re.split("(?<! [a-zA-Z])(?<!^ii)(?<!^iii)(?<!^iv)(?<!^vi)(?<!^vii)(?<!^viii)(?<!^ix)(?<!^[a-zA-Z])(?<![0-9])\\.(?![a-zA-z]|[0-9]| [0-9]| g.)",
+                                       splits_O[s])
+    s = 0
+    while s < len(splits_T):
+        if re.search("^[ |`|'|)|\"|”|‘|’]*$",splits_T[s]):
+            splits_T = splits_T[:s] + splits_T[(s+1):]
+        else:
+            s += 1
     return(splits_T)
 
 def split_motions(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
@@ -21,7 +26,6 @@ def split_motions(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
     for motion in motions:
         splits = split_motion(motion.content)
         for s in splits:
-            if len(s)>0:
                 split = Split(id=id,content=s,motion_id=motion.id)
                 db.session.add(split)
                 id += 1
@@ -39,4 +43,4 @@ def split_motions(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
     for f in range(0,math.ceil(len(splits)/5000)):
         collection.add(documents=splits[f*5000:min((f+1)*5000,len(splits))],
                        ids=list(map(str,ids[f*5000:min((f+1)*5000,len(ids))])))
-    return (True)
+    return ("True")

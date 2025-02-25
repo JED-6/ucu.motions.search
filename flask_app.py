@@ -3,6 +3,7 @@ from flask import Flask, render_template, request
 import project_code.sentence_similarity as ss
 from project_code.models import db
 from project_code.global_variables import *
+from project_code.split_motions import split_motions
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Motions.db"
@@ -22,6 +23,7 @@ def search():
         elif method == "tf_idf":
             result = ss.calc_tf_idf(motions_content)
         splits = ss.get_split_details(result,UCU_WEBSITE_URL)
+        
         return render_template("index.html",splits=zip(splits["documents"],splits["distances"],splits["links"],splits["Title"]),motions_content=motions_content)
     else:
         return render_template("index.html",splits=[],motions_content="")

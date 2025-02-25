@@ -8,10 +8,11 @@
         <h1>Search UCU Motions</h1>
         <div id="search_results">
             <form action="/" method="POST">
+                <label for="content">Enter motion to compare with existing motions:</label>
+                <br>
                 <textarea name="content" id="content", placeholder="Search motions ...">{{ motions_content }}</textarea>
                 <br>
                 <label for="search_method">Select Search Method:</label>
-                <br>
                 <select name="search_method" id = "search_method">
                     <option value="all_mpnet_base_v2">all-mpnet-base-v2</option>
                     <option value="tf_idf">if.idf</option>
