@@ -11,9 +11,16 @@ db = db.init_app(app)
 @app.route('/', methods=["POST","GET"])
 def search():
     if request.method == "POST":
+        method = "tf_idf"
         motions_content = request.form["content"]
-        collection = ss.initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME)
-        splits = ss.compare(motions_content,collection,10,UCU_WEBSITE_URL)
+        if method == "collection_encoding":
+            if not COLLECTION_INITIALIZED:
+                collection = ss.initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME)
+                COLLECTION_INITIALIZED = True
+            result = ss.compare(motions_content,collection,10)
+        elif method == "tf_idf":
+            result = ss.calc_tf_idf(motions_content)
+        splits = ss.get_split_details(result,UCU_WEBSITE_URL)
         return render_template("index.html",splits=zip(splits["documents"],splits["distances"],splits["links"],splits["Title"]),motions_content=motions_content)
     else:
         return render_template("index.html",splits=[],motions_content="")
