@@ -17,6 +17,7 @@ def split_motion(text):
         if re.search("^[ |`|'|)|\"|”|‘|’]*$",splits_T[s]):
             splits_T = splits_T[:s] + splits_T[(s+1):]
         else:
+            splits_T[s] = splits_T.lstrip() 
             s += 1
     return(splits_T)
 

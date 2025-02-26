@@ -22,6 +22,10 @@ table, th, td {
   padding: 5px;
 }
 
+th {
+  cursor: pointer;
+}
+
 form {
   margin-bottom: 20px;
   float: left;
