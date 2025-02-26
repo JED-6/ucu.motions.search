@@ -12,9 +12,11 @@ def get_split_details(result,UCU_WEBSITE_URL):
     motion_ids = [split.motion_id for split in splits]
     result["links"] = [UCU_WEBSITE_URL+str(id) for id in motion_ids]
 
-    motions = Motion.query.with_entities(Motion.id,Motion.title).filter(Motion.id.in_(motion_ids)).all()
-    motions = [[m.id for m in motions],[m.title for m in motions]]
+    motions = Motion.query.with_entities(Motion.id,Motion.title,Motion.session).filter(Motion.id.in_(motion_ids)).all()
+    motions = [[m.id for m in motions],[m.title for m in motions],[m.session for m in motions]]
     result["Title"] = [motions[1][motions[0].index(id)]  for id in motion_ids]
+    result["Session"] = [motions[2][motions[0].index(id)]  for id in motion_ids]
+    result = zip(result["documents"],result["distances"],result["links"],result["Title"],result["Session"])
     return result
 
 def compare(sentence,collection,n_closest):

@@ -9,22 +9,19 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Motions.db"
 db = db.init_app(app)
 
+COLLECTION = ss.initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME)
+
 @app.route('/', methods=["POST","GET"])
 def search():
-    global COLLECTION_INITIALIZED
-    global collection
     if request.method == "POST":
         motions_content = request.form["content"]
         method = request.form["search_method"]
         if method == "all_mpnet_base_v2":
-            if not COLLECTION_INITIALIZED:
-                collection = ss.initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME)
-                COLLECTION_INITIALIZED = True
-            result = ss.compare(motions_content,collection,10)
+            result = ss.compare(motions_content,COLLECTION,10)
         elif method == "tf_idf":
             result = ss.calc_tf_idf(motions_content)
         splits = ss.get_split_details(result,UCU_WEBSITE_URL)
-        return render_template("index.html",splits=zip(splits["documents"],splits["distances"],splits["links"],splits["Title"]),motions_content=motions_content)
+        return render_template("index.html",splits=splits,motions_content=motions_content)
     else:
         return render_template("index.html",splits=[],motions_content="")
 
