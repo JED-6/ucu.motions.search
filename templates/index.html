@@ -14,8 +14,9 @@
                 <br>
                 <label for="search_method">Select Search Method:</label>
                 <select name="search_method" id = "search_method">
-                    <option value="all_mpnet_base_v2">all-mpnet-base-v2</option>
-                    <option value="tf_idf">if.idf</option>
+                    {% for meth in search_methods %}
+                        <option value="{{meth}}" {% if meth==method %} selected {% endif %}>{{meth}}</option>
+                    {% endfor %}
                 </select>
                 <br>
                 <input type="submit" value="Search Motions">

@@ -13,17 +13,18 @@ COLLECTION = ss.initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME)
 
 @app.route('/', methods=["POST","GET"])
 def search():
+    search_methods = ["all-mpnet-base-v2","tf.idf"]
     if request.method == "POST":
         motions_content = request.form["content"]
         method = request.form["search_method"]
-        if method == "all_mpnet_base_v2":
+        if method == search_methods[0]:
             result = ss.compare(motions_content,COLLECTION,10)
-        elif method == "tf_idf":
+        elif method == search_methods[1]:
             result = ss.calc_tf_idf(motions_content)
         splits = ss.get_split_details(result,UCU_WEBSITE_URL)
-        return render_template("index.html",splits=splits,motions_content=motions_content)
+        return render_template("index.html",splits=splits,motions_content=motions_content,search_methods=search_methods,method=request.form["search_method"])
     else:
-        return render_template("index.html",splits=[],motions_content="")
+        return render_template("index.html",splits=[],motions_content="",search_methods=search_methods,method=search_methods[0])
 
 if __name__=="__main__":
     app.run(debug=True)
