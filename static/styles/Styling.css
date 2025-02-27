@@ -5,7 +5,7 @@ body {
 }
 
 #search_results {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 h1 {
@@ -27,7 +27,8 @@ th {
 }
 
 form {
-  margin-bottom: 20px;
+  margin-top: 15px;
+  margin-bottom: 15px;
   float: left;
   
 }
@@ -48,6 +49,11 @@ textarea {
   margin-top: 5px;
 }
 
+input{
+  margin-top:5px;
+  margin-bottom:5px;
+}
+
 input[type=submit] {
   border-radius: 5px;
   border-width: 1px;
@@ -56,10 +62,14 @@ input[type=submit] {
   background-color: #e74898;
   color: white;
   border-color: #c63e83;
+
   padding: 5px;
   padding-left: 10px;
   padding-right: 10px;
 
   cursor: pointer;
-  margin-top:5px;
+}
+
+input[type=text]{
+  width: 30px;
 }

@@ -34,7 +34,7 @@ def initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
     collection = client.get_collection(name=COLLECTION_NAME,embedding_function=embedding_func)
     return collection
 
-def calc_tf_idf(query_sentence):
+def calc_tf_idf(query_sentence,n_closest):
     warnings.filterwarnings("ignore",message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None'")
     all_splits = Split.query.with_entities(Split.id,Split.content).order_by(Split.id).all()
     all_content = [split.content for split in all_splits]
@@ -50,7 +50,7 @@ def calc_tf_idf(query_sentence):
     similarity = sorted(similarity, key=lambda x: x[1],reverse=True)
 
     result = {}
-    result["documents"] = [s[2] for s in similarity[:10]]
-    result["distances"] = [1-s[1] for s in similarity[:10]]
-    result["ids"] = [s[0] for s in similarity[:10]]
+    result["documents"] = [s[2] for s in similarity[:n_closest]]
+    result["distances"] = [1-s[1] for s in similarity[:n_closest]]
+    result["ids"] = [s[0] for s in similarity[:n_closest]]
     return result

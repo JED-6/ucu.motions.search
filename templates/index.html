@@ -13,14 +13,17 @@
                 <br>
                 <textarea name="content" id="content", placeholder="Search motions ...">{{ motions_content }}</textarea>
                 <br>
-                <label for="search_method">Select Search Method:</label>
+                <label for="search_method">Select Search Method: </label>
                 <select name="search_method" id = "search_method">
                     {% for meth in search_methods %}
                         <option value="{{meth}}" {% if meth==method %} selected {% endif %}>{{meth}}</option>
                     {% endfor %}
                 </select>
                 <br>
-                <input type="submit" value="Search Motions">
+                <label for="num_results">How many results?: </label>
+                <input type="text" name="num_results" value="{{ n_results }}">
+                <br>
+                <input type="submit" name="search_motions" value="Search Motions">
             </form>
             <table id="results_table">
                 <thead>
@@ -42,6 +45,11 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% if allow_more %}
+            <form action="/" method="POST">
+                <input type="submit" name="search_motions" value="Show More Results">
+            </form>
+            {% endif %}
         </div>
     </body>
 </html>
