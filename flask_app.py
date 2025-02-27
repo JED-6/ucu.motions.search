@@ -22,7 +22,7 @@ def search():
             session["n_results"] = int(request.form["num_results"])
             session["motions_content"] = request.form["content"]
             session["method"] = request.form["search_method"]
-        print(session["n_results"])
+        
         if session["method"] == search_methods[0]:
             result = ss.compare(session["motions_content"],COLLECTION,session["n_results"])
         elif session["method"] == search_methods[1]:
