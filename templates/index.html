@@ -23,7 +23,7 @@
                 <label for="num_results">How many results?: </label>
                 <input type="text" name="num_results" value="{{ n_results }}">
                 <br>
-                <input type="submit" name="search_motions" value="Search Motions">
+                <input type="submit" name="submit_buttom" value="Search Motions">
             </form>
             <table id="results_table">
                 <thead>
@@ -47,9 +47,12 @@
             </table>
             {% if allow_more %}
             <form action="/" method="POST">
-                <input type="submit" name="search_motions" value="Show More Results">
+                <input type="submit" name="submit_buttom" value="Show More Results">
             </form>
             {% endif %}
+            <form action="/" method="POST">
+                <input type="submit" name="submit_buttom" value="Scrape Motions">
+            </form>
         </div>
     </body>
 </html>
