@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/Styling.css') }}">
+        <script src="{{ url_for('static', filename='dynamic/sort.js') }}"></script>
+        <title>Search UCU Congress Motions</title>
+    </head>
+    <body>
+        <div class="nav_bar">
+            <a href="{{ url_for('search')}}">Home</a>
+            {% if not admin %}
+                <a href="{{ url_for('login')}}">Admin Login</a>
+            {% else %}
+                <a href="{{ url_for('logout')}}">Logout</a>
+            {% endif %}
+        </div>
+        <form action="/login" method="POST" class="login">
+            <label for="username">Username:</label>
+            <input type="text" name="username", placeholder="username">
+            <br>
+            <label for="username">Password:</label>
+            <input type="password" name="password", placeholder="password">
+            <br>
+            <input type="submit" name="login" value="Login">
+            {% if admin %}
+            <a href="{{ url_for('register')}}">Create Account</a>
+            {% endif %}
+            {% if failed %}
+                <p class="error">Either the username or password was incorrect</p>
+            {% endif %}
+        </form>
+    </body>
+</html>

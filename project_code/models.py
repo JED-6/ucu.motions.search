@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin, AnonymousUserMixin
 db = SQLAlchemy()
 
 #run in console to create db
@@ -45,3 +46,10 @@ def clear_motions_db():
     for motion in motions:
         db.session.delete(motion)
     db.session.commit()
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer,primary_key=True,autoincrement=True)
+    username = db.Column(db.String(25),unique=True,nullable=False)
+    password = db.Column(db.String(250),nullable=False)
+    salt = db.Column(db.String(250),nullable=False)
+    admin = db.Column(db.Boolean,nullable=False)

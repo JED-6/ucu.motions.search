@@ -6,9 +6,22 @@
         <title>Search UCU Congress Motions</title>
     </head>
     <body>
+        <div class="nav_bar">
+            <a href="{{ url_for('search')}}">Home</a>
+            {% if not admin %}
+                <a href="{{ url_for('login')}}">Admin Login</a>
+            {% else %}
+                <a href="{{ url_for('logout')}}">Logout</a>
+            {% endif %}
+        </div>
         <h1>Search UCU Motions</h1>
-        <div id="search_results">
+        {% if admin %}
             <form action="/" method="POST">
+                <input type="submit" name="submit_buttom" value="Scrape Motions">
+            </form>
+        {% endif %}
+        <div id="search_results">
+            <form action="/" method="POST" class="query">
                 <label for="content">Enter motion to compare with existing motions:</label>
                 <br>
                 <textarea name="content" id="content", placeholder="Search motions ...">{{ motions_content }}</textarea>
@@ -50,9 +63,6 @@
                 <input type="submit" name="submit_buttom" value="Show More Results">
             </form>
             {% endif %}
-            <form action="/" method="POST">
-                <input type="submit" name="submit_buttom" value="Scrape Motions">
-            </form>
         </div>
     </body>
 </html>

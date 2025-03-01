@@ -4,12 +4,26 @@ body {
   margin-right: 100px;
 }
 
-#search_results {
-  margin-top: 10px;
+.nav_bar{
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  background-color: #2b135e;
+}
+
+.nav_bar > a {
+  background-color: #2b135e;
+  color: white;
+  text-decoration: none;
+  padding:10px;
+  margin: 5px;
+  font-size: 20px;
 }
 
 h1 {
   color: #2b135e;
+  margin-bottom: 5px;
 }
 
 table {
@@ -26,9 +40,9 @@ th {
   cursor: pointer;
 }
 
-form {
-  margin-top: 15px;
-  margin-bottom: 15px;
+form.query {
+  margin-top: 10px;
+  margin-bottom: 10px;
   float: left;
   
 }
@@ -70,6 +84,33 @@ input[type=submit] {
   cursor: pointer;
 }
 
-input[type=text]{
+form.query input[type=text]{
   width: 30px;
+}
+
+form.login, form.register{
+  width:250px;
+  height: 200px;
+  margin: auto;
+  margin-top: 150px;
+  text-align: center;
+  align-content: center;
+}
+
+form.login input[type=text], form.register input[type=text],
+input[type=password]{
+  width: 100px;
+  font-size: 20px;
+}
+form.login input[type=submit], form.register input[type=submit],
+input[type=password], form.login label, form.register label{
+  font-size: 20px;
+}
+
+p.error {
+  border: solid red;
+  background-color: #F08784;
+  border-radius: 5px;
+  border-width: 2px;
+  padding: 5px;
 }
