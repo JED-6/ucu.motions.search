@@ -7,16 +7,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 import warnings
 
 def get_split_details(result,UCU_WEBSITE_URL):
-    splits = db.session.execute(select(Split.id,Split.motion_id).where(Split.id.in_(result["ids"]))).all()
+    splits = db.session.execute(select(Split.id,Split.motion_id,Split.action).where(Split.id.in_(result["ids"]))).all()
     splits = sorted(splits, key=lambda s: result["ids"].index(s.id))
     motion_ids = [split.motion_id for split in splits]
     result["links"] = [UCU_WEBSITE_URL+str(id) for id in motion_ids]
+    result["action"] = [split.action for split in splits]
 
     motions = db.session.execute(select(Motion.id,Motion.title,Motion.session).where(Motion.id.in_(motion_ids))).all()
     motions = [[m.id for m in motions],[m.title for m in motions],[m.session for m in motions]]
     result["Title"] = [motions[1][motions[0].index(id)]  for id in motion_ids]
     result["Session"] = [motions[2][motions[0].index(id)]  for id in motion_ids]
-    result = zip(result["documents"],result["distances"],result["links"],result["Title"],result["Session"])
+    result = zip(result["documents"],result["distances"],result["links"],result["Title"],result["Session"],result["action"])
     return result
 
 def compare(sentence,collection,n_closest):

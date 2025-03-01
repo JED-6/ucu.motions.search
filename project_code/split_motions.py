@@ -7,7 +7,7 @@ from project_code.models import *
 def get_split_type(split):
     actions = ["Resolve","Demand","Instruct","Insist","Mandate","Believe","Note","Call","Reaffirm","Affirm","Agree","Support",
                "Commend","Welcomes","Ask","Congratulate","Deplore","Recognise","Vote","Endorse","Accept","Approve","Oppose","Condemn",
-               "Sends","Undertake","Decide","Pledge","Encourage","Recommends","Will","urges","Reiterates","Requests","Applauds"]
+               "Sends","Undertake","Decide","Pledge","Encourage","Recommends","Will","urges","Reiterates","Requests","Applauds","Rejects"]
     institutions = ["Congress","Conference","HE Sector Conference","HESC","HEC","Special FE sector conference","SFESC","FESC","UCU","We"]
     for a in actions:
             if re.search("^"+a,split.strip()):

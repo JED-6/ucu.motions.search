@@ -45,10 +45,11 @@
             <table id="results_table">
                 <thead>
                     <tr>
-                        <th onclick="sortResults(0)" class="header" style="width:60%" title="Order by contents">Contents</th>
+                        <th onclick="sortResults(0)" class="header" style="width:55%" title="Order by contents">Contents</th>
                         <th onclick="sortResults(1)" class="header" style="width:5%"  title="Order by distance">Distance</th>
-                        <th onclick="sortResults(2)" class="header"                   title="Order by motion title">Motion Title</th>
+                        <th onclick="sortResults(2)" class="header" style="width:20%" title="Order by motion title">Motion Title</th>
                         <th onclick="sortResults(3)" class="header" style="width:10%" title="Order by session">Session</th>
+                        <th onclick="sortResults(4)" class="header" style="width:10%" title="Order by action">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,6 +59,7 @@
                             <td style="text-align: center">{{ split[1]|round(2) }}</td>
                             <td><a href={{ split[2] }}>{{ split[3] }}</a></td>
                             <td>{{ split[4] }}</td>
+                            <td>{{ split[5] }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
