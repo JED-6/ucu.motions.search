@@ -114,3 +114,7 @@ p.error {
   border-width: 2px;
   padding: 5px;
 }
+
+form.scraper input[type=text]{
+  width:40px;
+}

@@ -4,9 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 from project_code.models import Motion, Split, db, clear_motions_db
 import project_code.split_motions as sm
-import project_code.global_variables as gv
 
-def scrape_motions(UCU_WEBSITE_URL,URL_ID_START,URL_ID_END,UCU_WEBSITE_CLASSES,clear_db=False):
+def scrape_motions(UCU_WEBSITE_URL,START,END,UCU_WEBSITE_CLASSES,CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,clear_db=False):
     if clear_db:
         #CLEARS DATABASE
         clear_motions_db()
@@ -16,7 +15,7 @@ def scrape_motions(UCU_WEBSITE_URL,URL_ID_START,URL_ID_END,UCU_WEBSITE_CLASSES,c
     motions = 0
     id = 0
     print("Scraping Motions ...")
-    for motion_num in range(URL_ID_START,URL_ID_END):
+    for motion_num in range(START,END):
         r = requests.get(UCU_WEBSITE_URL+str(motion_num))
         soup = BeautifulSoup(r.content,"html.parser")
         if soup.find("p", class_="alert alert-error") is None:
@@ -44,15 +43,15 @@ def scrape_motions(UCU_WEBSITE_URL,URL_ID_START,URL_ID_END,UCU_WEBSITE_CLASSES,c
                                 listing=motion[UCU_WEBSITE_CLASSES["listing"]])
             db.session.add(new_motion)
             motions += 1
-        if completed <= math.floor(((motion_num-URL_ID_START)/(URL_ID_END-URL_ID_START))*10):
+        if completed <= math.floor(((motion_num-START)/(END-START))*10):
             completed += 1
-            print(math.floor(((motion_num-URL_ID_START)/(URL_ID_END-URL_ID_START))*100),"% complete ...")
+            print(math.floor(((motion_num-START)/(END-START))*100),"% complete ...")
         missed += [motion_num]
     db.session.commit()
     print("100% complete")
     try:
         print("Encoding splits ...")
-        sm.encode_splits(gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME,URL_ID_START,URL_ID_END,clear_collection=clear_db)
+        sm.encode_splits(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,START,END,clear_collection=clear_db)
     except:
         print("Failed to encode splits")
 

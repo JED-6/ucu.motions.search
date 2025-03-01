@@ -16,7 +16,11 @@
         </div>
         <h1>Search UCU Motions</h1>
         {% if admin %}
-            <form action="/" method="POST">
+            <form action="/scrape_motions" method="POST" class="scraper">
+                <label for="start">Starting ID:</label>
+                <input type="text" name="start" placeholder="7925">
+                <label for="end">Final ID:</label>
+                <input type="text" name="end" placeholder="10967">
                 <input type="submit" name="submit_buttom" value="Scrape Motions">
             </form>
         {% endif %}
@@ -24,7 +28,7 @@
             <form action="/" method="POST" class="query">
                 <label for="content">Enter motion to compare with existing motions:</label>
                 <br>
-                <textarea name="content" id="content", placeholder="Search motions ...">{{ motions_content }}</textarea>
+                <textarea name="content" id="content" placeholder="Search motions ...">{{ motions_content }}</textarea>
                 <br>
                 <label for="search_method">Select Search Method: </label>
                 <select name="search_method" id = "search_method">

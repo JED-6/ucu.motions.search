@@ -32,29 +32,42 @@ def loader_user(user_id):
 @app.route('/', methods=["POST","GET"])
 def search():
     if request.method == "POST":
-        if request.form["submit_buttom"] == "Scrape Motions":
-            scrape_motions(gv.UCU_WEBSITE_URL,gv.URL_ID_START,gv.URL_ID_END,gv.UCU_WEBSITE_CLASSES)
-            return render_template("index.html",splits=[],motions_content="",search_methods=gv.SEARCH_METHODS,
-                                   method=gv.SEARCH_METHODS[0],allow_more=False,n_results=10)
+        if request.form["submit_buttom"] == "Show More Results":
+            session["n_results"] += session["n_initial_results"]
         else:
-            if request.form["submit_buttom"] == "Show More Results":
-                session["n_results"] += session["n_initial_results"]
-            else:
-                session["n_initial_results"] = int(request.form["num_results"])
-                session["n_results"] = int(request.form["num_results"])
-                session["motions_content"] = request.form["content"]
-                session["method"] = request.form["search_method"]
-            
-            if session["method"] == gv.SEARCH_METHODS[0]:
-                result = ss.compare(session["motions_content"],COLLECTION,session["n_results"])
-            elif session["method"] == gv.SEARCH_METHODS[1]:
-                result = ss.calc_tf_idf(session["motions_content"],session["n_results"])
-            splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
-            return render_template("index.html",splits=splits,motions_content=session["motions_content"],search_methods=gv.SEARCH_METHODS,
-                                method=session["method"],allow_more=True,n_results=session["n_initial_results"],admin=is_admin())
+            session["n_initial_results"] = int(request.form["num_results"])
+            session["n_results"] = int(request.form["num_results"])
+            session["motions_content"] = request.form["content"]
+            session["method"] = request.form["search_method"]
+        
+        if session["method"] == gv.SEARCH_METHODS[0]:
+            result = ss.compare(session["motions_content"],COLLECTION,session["n_results"])
+        elif session["method"] == gv.SEARCH_METHODS[1]:
+            result = ss.calc_tf_idf(session["motions_content"],session["n_results"])
+        splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
+        return render_template("index.html",splits=splits,motions_content=session["motions_content"],search_methods=gv.SEARCH_METHODS,
+                            method=session["method"],allow_more=True,n_results=session["n_initial_results"],admin=is_admin())
     else:
         return render_template("index.html",splits=[],motions_content="",search_methods=gv.SEARCH_METHODS,method=gv.SEARCH_METHODS[0],
                                allow_more=False,n_results=10,admin=is_admin())
+
+@app.route('/scrape_motions', methods=["POST"])
+def scrape_motions():
+    start = request.form["start"]
+    end = request.form["end"]+1
+    splits = db.session.scalar(select(Split).where(Split.motion_id>=start,Split.motion_id<end)).all()
+    split_ids = []
+    for s in splits:
+        split_ids += s.id
+        db.session.delete(s)
+    motions = db.session.scalar(select(Motion).where(Motion.id>=start,Motion.id<end)).all()
+    motion_ids = []
+    for m in motions:
+        motion_ids += [m.id]
+        db.session.delete(m)
+    db.session.commit()
+    message, missed =scrape_motions(gv.UCU_WEBSITE_URL,gv.UCU_WEBSITE_CLASSES,gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME,start,end)
+    return redirect("/")
 
 @app.route('/login', methods=["POST","GET"])
 def login():
