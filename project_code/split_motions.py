@@ -2,7 +2,7 @@ import re
 import chromadb
 from chromadb.utils import embedding_functions
 import math
-from project_code.models import Split
+from project_code.models import *
 
 def get_split_type(split):
     actions = ["Resolve","Demand","Instruct","Insist","Mandate","Believe","Note","Call","Reaffirm","Affirm","Agree","Support",
@@ -76,7 +76,7 @@ def encode_splits(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,URL_ID_START,URL_ID_END
     collection = client.get_or_create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
 
     #embed splits
-    query = Split.query.with_entities(Split.id,Split.content).filter(Split.motion_id>=URL_ID_START,Split.motion_id<URL_ID_END).all()
+    query = db.session.execute(select(Split.id,Split.content).where(Split.motion_id>=URL_ID_START,Split.motion_id<URL_ID_END)).all()
     ids = [s.id for s in query]
     splits = [s.content for s in query]
     for f in range(0,math.ceil(len(splits)/5000)):

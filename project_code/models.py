@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import select
 from flask_login import UserMixin, AnonymousUserMixin
 db = SQLAlchemy()
 
@@ -35,14 +36,14 @@ class Split(db.Model):
     action = db.Column(db.String(10))
 
     def __repr__(self):
-        return "<Split " + self.id + ">"
+        return "<Split " + str(self.id) + ">"
     
 def clear_motions_db():
-    splits = Split.query.all()
+    splits = db.session.execute(select(Split)).all()
     for split in splits:
         db.session.delete(split)
 
-    motions = Motion.query.all()
+    motions = db.session.execute(select(Motion)).all()
     for motion in motions:
         db.session.delete(motion)
     db.session.commit()
@@ -53,3 +54,6 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(250),nullable=False)
     salt = db.Column(db.String(250),nullable=False)
     admin = db.Column(db.Boolean,nullable=False)
+
+    def __repr__(self):
+        return "<User " + self.username + ">"

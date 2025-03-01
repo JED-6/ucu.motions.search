@@ -1,7 +1,7 @@
 
 from flask import Flask, render_template, request, session, redirect
 import project_code.sentence_similarity as ss
-from project_code.models import db, User
+from project_code.models import *
 import project_code.global_variables as gv
 from project_code.get_motions_web_scraper import scrape_motions
 from flask_login import LoginManager, login_user, logout_user, current_user
@@ -27,7 +27,7 @@ def is_admin():
 
 @login_manager.user_loader
 def loader_user(user_id):
-    return db.session.query(User).get(user_id)
+    return db.session.scalars(select(User).where(User.id==user_id)).first()
 
 @app.route('/', methods=["POST","GET"])
 def search():
@@ -60,7 +60,7 @@ def search():
 def login():
     if request.method == "POST":
         username = request.form.get("username")
-        user = db.session.query(User).filter(User.username==username).first()
+        user = db.session.scalars(select(User).where(User.username==username)).first()
         if user is not None:
             salt = user.salt
             password = bcrypt.hashpw(request.form.get("password").encode("utf-8"),salt)
@@ -76,7 +76,7 @@ def register():
     if is_admin():
         if request.method == "POST":
             username = request.form.get("username")
-            if db.session.query(User).filter(User.username==username).first() is None:
+            if db.session.scalars(select(User).where(User.username==username)).first() is None:
                 password = request.form.get("password")
                 confirm = request.form.get("confirm")
                 if password == confirm:

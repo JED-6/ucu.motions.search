@@ -1,18 +1,18 @@
 import chromadb
 from chromadb.utils import embedding_functions
-from project_code.models import Split, Motion
+from project_code.models import *
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
 
 def get_split_details(result,UCU_WEBSITE_URL):
-    splits = Split.query.with_entities(Split.id,Split.motion_id).filter(Split.id.in_(result["ids"])).all()
+    splits = db.session.execute(select(Split.id,Split.motion_id).where(Split.id.in_(result["ids"]))).all()
     splits = sorted(splits, key=lambda s: result["ids"].index(s.id))
     motion_ids = [split.motion_id for split in splits]
     result["links"] = [UCU_WEBSITE_URL+str(id) for id in motion_ids]
 
-    motions = Motion.query.with_entities(Motion.id,Motion.title,Motion.session).filter(Motion.id.in_(motion_ids)).all()
+    motions = db.session.execute(select(Motion.id,Motion.title,Motion.session).where(Motion.id.in_(motion_ids))).all()
     motions = [[m.id for m in motions],[m.title for m in motions],[m.session for m in motions]]
     result["Title"] = [motions[1][motions[0].index(id)]  for id in motion_ids]
     result["Session"] = [motions[2][motions[0].index(id)]  for id in motion_ids]
@@ -36,7 +36,7 @@ def initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
 
 def calc_tf_idf(query_sentence,n_closest):
     warnings.filterwarnings("ignore",message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None'")
-    all_splits = Split.query.with_entities(Split.id,Split.content).order_by(Split.id).all()
+    all_splits = db.session.execute(select(Split.id,Split.content).order_by(Split.id)).all()
     all_content = [split.content for split in all_splits]
 
     tfidf = TfidfVectorizer(analyzer="word",sublinear_tf=True,max_features=5000,tokenizer=nltk.word_tokenize)
