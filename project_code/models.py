@@ -31,7 +31,7 @@ class Split(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text,nullable=False)
     motion_id = db.Column(db.Integer,db.ForeignKey("motion.id"))
-    split_type = db.Column(db.String(10))
+    action = db.Column(db.String(10))
 
     def __repr__(self):
         return "<Split " + self.id + ">"

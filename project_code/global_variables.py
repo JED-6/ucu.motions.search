@@ -1,4 +1,4 @@
-CHROMA_DATA_PATH = "Data/embeddings/"
+CHROMA_DATA_PATH = "encodings/"
 MODEL = "all-mpnet-base-v2"
 COLLECTION_NAME = "splits_embeddings"
 
