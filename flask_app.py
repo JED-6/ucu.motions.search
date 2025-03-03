@@ -43,7 +43,7 @@ def search():
             SESSION["motions_content"] = request.form["content"]
             SESSION["method"] = request.form["search_method"]
         
-        all_actions = get_actions()
+        all_actions = ["All"] + get_actions()
         sel_acts = []
         acts = []
         for a in all_actions:
@@ -52,6 +52,8 @@ def search():
                 acts += [a]
             else:
                 sel_acts += [[a,False]]
+        if "All" in request.form.getlist("actions"):
+            acts = all_actions
         all_sessions = get_sessions()
         sel_sessions = [request.form["session_start"],request.form["session_end"]]
         sessions = []
@@ -72,8 +74,10 @@ def search():
                             method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],admin=is_admin(),
                             actions=sel_acts,sessions=all_sessions,sel_sessions=sel_sessions)
     else:
-        actions = get_actions()
+        actions = ["All"]
+        actions += get_actions()
         actions = [[a,False] for a in actions]
+        actions[0][1] = True
         sessions = get_sessions()
         sel_sessions = [sessions[0],sessions[-1]]
         return render_template("index.html",splits=[],motions_content="",search_methods=gv.SEARCH_METHODS,method=gv.SEARCH_METHODS[0],
