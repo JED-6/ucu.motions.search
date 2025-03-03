@@ -1,11 +1,14 @@
 
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, redirect
+from flask import session as SESSION
 import project_code.sentence_similarity as ss
 from project_code.models import *
 import project_code.global_variables as gv
 from project_code.get_motions_web_scraper import scrape_motions
 from flask_login import LoginManager, login_user, logout_user, current_user
 import bcrypt
+
+from project_code.split_motions import encode_splits
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Motions.db"
@@ -33,23 +36,48 @@ def loader_user(user_id):
 def search():
     if request.method == "POST":
         if request.form["submit_buttom"] == "Show More Results":
-            session["n_results"] += session["n_initial_results"]
+            SESSION["n_results"] += SESSION["n_initial_results"]
         else:
-            session["n_initial_results"] = int(request.form["num_results"])
-            session["n_results"] = int(request.form["num_results"])
-            session["motions_content"] = request.form["content"]
-            session["method"] = request.form["search_method"]
+            SESSION["n_initial_results"] = int(request.form["num_results"])
+            SESSION["n_results"] = int(request.form["num_results"])
+            SESSION["motions_content"] = request.form["content"]
+            SESSION["method"] = request.form["search_method"]
         
-        if session["method"] == gv.SEARCH_METHODS[0]:
-            result = ss.compare(session["motions_content"],COLLECTION,session["n_results"])
-        elif session["method"] == gv.SEARCH_METHODS[1]:
-            result = ss.calc_tf_idf(session["motions_content"],session["n_results"])
+        all_actions = get_actions()
+        sel_acts = []
+        acts = []
+        for a in all_actions:
+            if a in request.form.getlist("actions"):
+                sel_acts += [[a,True]]
+                acts += [a]
+            else:
+                sel_acts += [[a,False]]
+        all_sessions = get_sessions()
+        sel_sessions = [request.form["session_start"],request.form["session_end"]]
+        sessions = []
+        start_reached = False
+        for sesh in all_sessions:
+            if sesh == sel_sessions[0]:
+                start_reached = True
+            if start_reached:
+                sessions += [sesh]
+            if sesh == sel_sessions[1]:
+                break
+        if SESSION["method"] == gv.SEARCH_METHODS[0]:
+            result = ss.compare(SESSION["motions_content"],COLLECTION,SESSION["n_results"],acts,sessions)
+        elif SESSION["method"] == gv.SEARCH_METHODS[1]:
+            result = ss.calc_tf_idf(SESSION["motions_content"],SESSION["n_results"],acts,sessions)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
-        return render_template("index.html",splits=splits,motions_content=session["motions_content"],search_methods=gv.SEARCH_METHODS,
-                            method=session["method"],allow_more=True,n_results=session["n_initial_results"],admin=is_admin())
+        return render_template("index.html",splits=splits,motions_content=SESSION["motions_content"],search_methods=gv.SEARCH_METHODS,
+                            method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],admin=is_admin(),
+                            actions=sel_acts,sessions=all_sessions,sel_sessions=sel_sessions)
     else:
+        actions = get_actions()
+        actions = [[a,False] for a in actions]
+        sessions = get_sessions()
+        sel_sessions = [sessions[0],sessions[-1]]
         return render_template("index.html",splits=[],motions_content="",search_methods=gv.SEARCH_METHODS,method=gv.SEARCH_METHODS[0],
-                               allow_more=False,n_results=10,admin=is_admin())
+                               allow_more=False,n_results=10,admin=is_admin(),actions=actions,sessions=sessions,sel_sessions=sel_sessions)
 
 @app.route('/scrape_motions', methods=["POST"])
 def scrape_motions():

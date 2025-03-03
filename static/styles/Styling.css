@@ -118,3 +118,9 @@ p.error {
 form.scraper input[type=text]{
   width:40px;
 }
+
+.long_options,.long_options > *{
+  display: inline-block;
+  margin-bottom: 0px;
+  margin-top: 0px;
+}

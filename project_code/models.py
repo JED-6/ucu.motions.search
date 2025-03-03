@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select
+from sqlalchemy import select, func, text
 from flask_login import UserMixin, AnonymousUserMixin
 db = SQLAlchemy()
 
@@ -57,3 +57,22 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return "<User " + self.username + ">"
+
+def get_actions_ordered():
+    counts = db.session.execute(select(Split.action, func.count(Split.action).label("count")).where(Split.action!="Other").group_by(Split.action).order_by(text("count DESC")))
+    actions = ["Other"]
+    for c in counts:
+        actions += [c.action]
+    return actions
+
+def get_actions():
+    counts = db.session.execute(select(Split.action).where(Split.action!="Other").distinct().order_by(Split.action))
+    actions = ["Other"]
+    for c in counts:
+        actions += [c.action]
+    return actions
+
+def get_sessions():
+    sessions = db.session.execute(select(Motion.session).order_by(Motion.session).distinct())
+    sessions = [s.session for s in sessions]
+    return sessions

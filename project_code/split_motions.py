@@ -3,13 +3,11 @@ import chromadb
 from chromadb.utils import embedding_functions
 import math
 from project_code.models import *
+import project_code.global_variables as gv
 
 def get_split_type(split):
-    actions = ["Resolve","Demand","Instruct","Insist","Mandate","Believe","Note","Call","Reaffirm","Affirm","Agree","Support",
-               "Commend","Welcomes","Ask","Congratulate","Deplore","Recognise","Vote","Endorse","Accept","Approve","Oppose","Condemn",
-               "Sends","Undertake","Decide","Pledge","Encourage","Recommends","Will","urges","Reiterates","Requests","Applauds","Rejects"]
     institutions = ["Congress","Conference","HE Sector Conference","HESC","HEC","Special FE sector conference","SFESC","FESC","UCU","We"]
-    for a in actions:
+    for a in gv.ACTIONS:
             if re.search("^"+a,split.strip()):
                 return a
             for i in institutions:
@@ -76,10 +74,16 @@ def encode_splits(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,URL_ID_START,URL_ID_END
     collection = client.get_or_create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
 
     #embed splits
-    query = db.session.execute(select(Split.id,Split.content).where(Split.motion_id>=URL_ID_START,Split.motion_id<URL_ID_END)).all()
-    ids = [s.id for s in query]
-    splits = [s.content for s in query]
+    query = db.session.execute(select(Split.id,Split.content,Split.action,Motion.session).select_from(Split).join(Motion,Motion.id==Split.motion_id).where(Split.motion_id>=URL_ID_START,Split.motion_id<URL_ID_END)).all()
+    ids = []
+    metadata = []
+    splits = []
+    for s in query:
+        ids += [str(s.id)]
+        metadata += [{"action":s.action,"session":s.session}]
+        splits += [s.content]
     for f in range(0,math.ceil(len(splits)/5000)):
         collection.add(documents=splits[f*5000:min((f+1)*5000,len(splits))],
-                       ids=list(map(str,ids[f*5000:min((f+1)*5000,len(ids))])))
+                    ids=ids[f*5000:min((f+1)*5000,len(ids))],
+                    metadatas=metadata[f*5000:min((f+1)*5000,len(ids))])
     return (True)

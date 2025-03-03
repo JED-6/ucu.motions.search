@@ -40,6 +40,29 @@
                 <label for="num_results">How many results?: </label>
                 <input type="text" name="num_results" value="{{ n_results }}">
                 <br>
+                <label for="session_start">Sessions from:</label>
+                <select name="session_start">
+                    {% for sesh in sessions %}
+                        <option value="{{sesh}}" {% if sesh==sel_sessions[0] %} selected {% endif %}>{{sesh}}</option>
+                    {% endfor %}
+                </select>
+                <label for="session_end">To:</label>
+                <select name="session_end">
+                    {% for sesh in sessions %}
+                        <option value="{{sesh}}" {% if sesh==sel_sessions[1] %} selected {% endif %}>{{sesh}}</option>
+                    {% endfor %}
+                </select>
+                <br>
+                <label for="action_options">Select which actions to search:</label>
+                <div name="action_options" style="margin-top: 5px;">
+                    {% for a in actions %}
+                        <div class="long_options">
+                            <p>|</p>
+                            <input type="checkbox" name="actions" value="{{a[0]}}" {% if a[1]%}checked{% endif %}>
+                            <label for="{{a[0]}}">{{a[0]}}</label>
+                        </div>
+                    {% endfor %}
+                </div>
                 <input type="submit" name="submit_buttom" value="Search Motions">
             </form>
             <table id="results_table">
