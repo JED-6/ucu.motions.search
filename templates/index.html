@@ -4,6 +4,24 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/Styling.css') }}">
         <script src="{{ url_for('static', filename='dynamic/sort.js') }}"></script>
         <title>Search UCU Congress Motions</title>
+
+        {% if motions|length>0 %}
+            <script type="text/javascript">
+                var motions_raw,init_sep,motions_sep,motions;
+                motions_raw = "{{motions}}";
+                init_sep = motions_raw.split("&#39;");
+                motions_sep = []
+                for (var i=0;i<init_sep.length;i++){
+                    if (i%2==1){
+                        motions_sep.push(init_sep[i])
+                    }
+                }
+                motions = []
+                for (var i=0;i<motions_sep.length;i+=3){
+                    motions.push([motions_sep[i],replace_special(motions_sep[i+1]),replace_special(motions_sep[i+2]),false]);
+                }
+            </script>
+        {% endif %}
     </head>
     <body>
         <div class="nav_bar">
@@ -14,7 +32,7 @@
                 <a href="{{ url_for('logout')}}">Logout</a>
             {% endif %}
         </div>
-        <h1>Search UCU Motions</h1>
+        <h1 onclick="alert(splits_sep)">Search UCU Motions</h1>
         {% if admin %}
             <form action="/scrape_motions" method="POST" class="scraper">
                 <label for="start">Starting ID:</label>
@@ -26,9 +44,9 @@
         {% endif %}
         <div id="search_results">
             <form action="/" method="POST" class="query">
-                <label for="content">Enter motion to compare with existing motions:</label>
+                <label for="search_query">Enter motion to compare with existing motions:</label>
                 <br>
-                <textarea name="content" id="content" placeholder="Search motions ...">{{ motions_content }}</textarea>
+                <textarea name="search_query" id="search_query" placeholder="Search motions ...">{{ search_query }}</textarea>
                 <br>
                 <label for="search_method">Select Search Method: </label>
                 <select name="search_method" id = "search_method">
@@ -78,11 +96,11 @@
                 <tbody>
                     {% for split in splits %}
                         <tr>
-                            <td>{{ split[0] }}</td>
-                            <td style="text-align: center">{{ split[1]|round(2) }}</td>
-                            <td><a href={{ split[2] }}>{{ split[3] }}</a></td>
-                            <td>{{ split[4] }}</td>
-                            <td>{{ split[5] }}</td>
+                            <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')">{{ split[1] }}</td>
+                            <td style="text-align: center">{{ split[3]|round(2) }}</td>
+                            <td><a href={{ split[4] }}>{{ split[5] }}</a></td>
+                            <td>{{ split[6] }}</td>
+                            <td>{{ split[7] }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

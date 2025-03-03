@@ -7,8 +7,8 @@ import project_code.global_variables as gv
 from project_code.get_motions_web_scraper import scrape_motions
 from flask_login import LoginManager, login_user, logout_user, current_user
 import bcrypt
-
-from project_code.split_motions import encode_splits
+import re
+import json
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Motions.db"
@@ -22,6 +22,12 @@ with app.app_context():
     db.create_all()
 
 COLLECTION = ss.initialise_model(gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME)
+
+def string_to_safe(text):
+    text = re.sub("\n","SPECIAL1",text)
+    text = re.sub("[']","SPECIAL2",text)
+    text = re.sub('["]',"SPECIAL3",text)
+    return text
 
 def is_admin():
     if current_user.is_anonymous:
@@ -40,7 +46,7 @@ def search():
         else:
             SESSION["n_initial_results"] = int(request.form["num_results"])
             SESSION["n_results"] = int(request.form["num_results"])
-            SESSION["motions_content"] = request.form["content"]
+            SESSION["search_query"] = request.form["search_query"]
             SESSION["method"] = request.form["search_method"]
         
         all_actions = ["All"] + get_actions()
@@ -66,13 +72,14 @@ def search():
             if sesh == sel_sessions[1]:
                 break
         if SESSION["method"] == gv.SEARCH_METHODS[0]:
-            result = ss.compare(SESSION["motions_content"],COLLECTION,SESSION["n_results"],acts,sessions)
+            result = ss.compare(SESSION["search_query"],COLLECTION,SESSION["n_results"],acts,sessions)
         elif SESSION["method"] == gv.SEARCH_METHODS[1]:
-            result = ss.calc_tf_idf(SESSION["motions_content"],SESSION["n_results"],acts,sessions)
+            result = ss.calc_tf_idf(SESSION["search_query"],SESSION["n_results"],acts,sessions)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
-        return render_template("index.html",splits=splits,motions_content=SESSION["motions_content"],search_methods=gv.SEARCH_METHODS,
+        motions = [[str(s[0]),string_to_safe(s[1]),string_to_safe(s[2])] for s in splits]
+        return render_template("index.html",splits=splits,search_query=SESSION["search_query"],search_methods=gv.SEARCH_METHODS,
                             method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],admin=is_admin(),
-                            actions=sel_acts,sessions=all_sessions,sel_sessions=sel_sessions)
+                            actions=sel_acts,sessions=all_sessions,sel_sessions=sel_sessions,motions=motions)
     else:
         actions = ["All"]
         actions += get_actions()

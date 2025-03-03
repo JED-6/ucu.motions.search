@@ -1,8 +1,46 @@
 var COLUMN = -1
 var dir = 1
 
+function replace_special(text){
+    text = text.replaceAll("SPECIAL1","<br>");
+    text = text.replaceAll("SPECIAL2","'");
+    text = text.replaceAll("SPECIAL3",'"');
+    return text;
+}
+
+function flattern_content(){
+    for (var i=0;i<motions.length;i++){
+        if(motions[i][3]){
+            document.getElementById(motions[i][0]).innerHTML = motions[i][1];
+            motions[i][3] = false;
+        }
+    }
+}
+
+function expand_content(id){
+    var motion;
+    for (var i=0;i<motions.length;i++){
+        if(motions[i][0]==id && motions[i][3]){
+            document.getElementById(motions[i][0]).innerHTML = motions[i][1];
+            motions[i][3] = false;
+            break;
+        }
+        else if(motions[i][0]==id){
+            motion = motions[i][2];
+            motion = motion.replaceAll(motions[i][1],'<span style="color:red;font-weight:bold;">'+motions[i][1]+"</span>")
+            document.getElementById(id).innerHTML = motion;
+            motions[i][3] = true;
+        }
+        else if(motions[i][3]){
+            document.getElementById(motions[i][0]).innerHTML = motions[i][1];
+            motions[i][3] = false;
+        }
+    }
+}
+
 function sortResults(column){
-    var table, sorted, rows, x, y, change;
+    var table, sorted, rows, x, y;
+    flattern_content()
     if (COLUMN == column){
         dir = dir*-1;
     }
