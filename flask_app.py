@@ -91,28 +91,32 @@ def search():
 
 @app.route('/scrape_motions', methods=["POST"])
 def scrape_motions():
-    start = request.form["start"]
-    end = request.form["end"]+1
-    splits = db.session.scalar(select(Split).where(Split.motion_id>=start,Split.motion_id<end)).all()
-    split_ids = []
-    for s in splits:
-        split_ids += s.id
-        db.session.delete(s)
-    motions = db.session.scalar(select(Motion).where(Motion.id>=start,Motion.id<end)).all()
-    motion_ids = []
-    for m in motions:
-        motion_ids += [m.id]
-        db.session.delete(m)
-    db.session.commit()
-    message, missed =scrape_motions(gv.UCU_WEBSITE_URL,gv.UCU_WEBSITE_CLASSES,gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME,start,end)
+    if is_admin():
+        start = request.form["start"]
+        end = request.form["end"]+1
+        splits = db.session.scalar(select(Split).where(Split.motion_id>=start,Split.motion_id<end)).all()
+        split_ids = []
+        for s in splits:
+            split_ids += s.id
+            db.session.delete(s)
+        motions = db.session.scalar(select(Motion).where(Motion.id>=start,Motion.id<end)).all()
+        motion_ids = []
+        for m in motions:
+            motion_ids += [m.id]
+            db.session.delete(m)
+        db.session.commit()
+        message, missed =scrape_motions(gv.UCU_WEBSITE_URL,gv.UCU_WEBSITE_CLASSES,gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME,start,end)
     return redirect("/")
 
 @app.route('/survey', methods=["POST","GET"])
 def relivant_splits():
-    split = db.session.execute(select(Split,Motion.title,Motion.content).join(Motion)).first()
-    motions = [[str(split[0].id),string_to_safe(split[0].content),string_to_safe(split[2])]]
-    splits = [[split[0].id,split[0].content,split[0].motion_id,split[1],split[0].action]]
-    return render_template("survey.html",splits=splits,motions=motions)
+    if current_user.is_anonymous:
+        return redirect("/")
+    else:
+        split = db.session.execute(select(Split,Motion.title,Motion.content).join(Motion)).first()
+        motions = [[str(split[0].id),string_to_safe(split[0].content),string_to_safe(split[2])]]
+        splits = [[split[0].id,split[0].content,split[0].motion_id,split[1],split[0].action]]
+        return render_template("survey.html",splits=splits,motions=motions)
 
 @app.route('/login', methods=["POST","GET"])
 def login():
