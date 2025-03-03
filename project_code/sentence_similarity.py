@@ -1,5 +1,5 @@
-import chromadb
-from chromadb.utils import embedding_functions
+# import chromadb
+# from chromadb.utils import embedding_functions
 from project_code.models import *
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -23,20 +23,20 @@ def get_split_details(result,UCU_WEBSITE_URL):
     result = list(zip(result["ids"],result["documents"],result["motion"],result["distances"],result["links"],result["Title"],result["Session"],result["action"]))
     return result
 
-def compare(sentence,collection,n_closest,actions,sessions):
-    query_results = collection.query(query_texts=[sentence],n_results=n_closest,where={"$and":[{"action":{"$in":actions}},{"session":{"$in":sessions}}]})
+# def compare(sentence,collection,n_closest,actions,sessions):
+#     query_results = collection.query(query_texts=[sentence],n_results=n_closest,where={"$and":[{"action":{"$in":actions}},{"session":{"$in":sessions}}]})
 
-    result = {}
-    result["documents"] = query_results["documents"][0]
-    result["distances"] = query_results["distances"][0]
-    result["ids"] = list(map(int,query_results["ids"][0]))
-    return result
+#     result = {}
+#     result["documents"] = query_results["documents"][0]
+#     result["distances"] = query_results["distances"][0]
+#     result["ids"] = list(map(int,query_results["ids"][0]))
+#     return result
 
-def initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
-    client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
-    embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL)
-    collection = client.get_or_create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
-    return collection
+# def initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
+#     client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
+#     embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL)
+#     collection = client.get_or_create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
+#     return collection
 
 def calc_tf_idf(query_sentence,n_closest,actions,sessions):
     warnings.filterwarnings("ignore",message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None'")

@@ -8,7 +8,6 @@ from project_code.get_motions_web_scraper import scrape_motions
 from flask_login import LoginManager, login_user, logout_user, current_user
 import bcrypt
 import re
-import json
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///Motions.db"
@@ -21,7 +20,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-COLLECTION = ss.initialise_model(gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME)
+# COLLECTION = ss.initialise_model(gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME)
 
 def string_to_safe(text):
     text = re.sub("\n","SPECIAL1",text)
@@ -71,9 +70,9 @@ def search():
                 sessions += [sesh]
             if sesh == sel_sessions[1]:
                 break
+        # if SESSION["method"] == gv.SEARCH_METHODS[0]:
+        #     result = ss.compare(SESSION["search_query"],COLLECTION,SESSION["n_results"],acts,sessions)
         if SESSION["method"] == gv.SEARCH_METHODS[0]:
-            result = ss.compare(SESSION["search_query"],COLLECTION,SESSION["n_results"],acts,sessions)
-        elif SESSION["method"] == gv.SEARCH_METHODS[1]:
             result = ss.calc_tf_idf(SESSION["search_query"],SESSION["n_results"],acts,sessions)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
         motions = [[str(s[0]),string_to_safe(s[1]),string_to_safe(s[2])] for s in splits]

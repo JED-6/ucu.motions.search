@@ -1,7 +1,7 @@
 import re
-import chromadb
-from chromadb.utils import embedding_functions
-import math
+# import chromadb
+# from chromadb.utils import embedding_functions
+# import math
 from project_code.models import *
 import project_code.global_variables as gv
 
@@ -62,28 +62,28 @@ def split_motion_action(motion):
         s += j
     return splits_action
 
-def encode_splits(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,URL_ID_START,URL_ID_END,clear_collection=False):
-    #create embedding collection
-    client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
-    embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL)
-    if clear_collection:
-        try:
-            client.delete_collection(name=COLLECTION_NAME)
-        except:
-            print("Failed to delete collection ",COLLECTION_NAME)
-    collection = client.get_or_create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
+# def encode_splits(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,URL_ID_START,URL_ID_END,clear_collection=False):
+#     #create embedding collection
+#     client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
+#     embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL)
+#     if clear_collection:
+#         try:
+#             client.delete_collection(name=COLLECTION_NAME)
+#         except:
+#             print("Failed to delete collection ",COLLECTION_NAME)
+#     collection = client.get_or_create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
 
-    #embed splits
-    query = db.session.execute(select(Split.id,Split.content,Split.action,Motion.session).select_from(Split).join(Motion,Motion.id==Split.motion_id).where(Split.motion_id>=URL_ID_START,Split.motion_id<URL_ID_END)).all()
-    ids = []
-    metadata = []
-    splits = []
-    for s in query:
-        ids += [str(s.id)]
-        metadata += [{"action":s.action,"session":s.session}]
-        splits += [s.content]
-    for f in range(0,math.ceil(len(splits)/5000)):
-        collection.add(documents=splits[f*5000:min((f+1)*5000,len(splits))],
-                    ids=ids[f*5000:min((f+1)*5000,len(ids))],
-                    metadatas=metadata[f*5000:min((f+1)*5000,len(ids))])
-    return (True)
+#     #embed splits
+#     query = db.session.execute(select(Split.id,Split.content,Split.action,Motion.session).select_from(Split).join(Motion,Motion.id==Split.motion_id).where(Split.motion_id>=URL_ID_START,Split.motion_id<URL_ID_END)).all()
+#     ids = []
+#     metadata = []
+#     splits = []
+#     for s in query:
+#         ids += [str(s.id)]
+#         metadata += [{"action":s.action,"session":s.session}]
+#         splits += [s.content]
+#     for f in range(0,math.ceil(len(splits)/5000)):
+#         collection.add(documents=splits[f*5000:min((f+1)*5000,len(splits))],
+#                     ids=ids[f*5000:min((f+1)*5000,len(ids))],
+#                     metadatas=metadata[f*5000:min((f+1)*5000,len(ids))])
+#     return (True)
