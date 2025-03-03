@@ -26,13 +26,14 @@
     <body>
         <div class="nav_bar">
             <a href="{{ url_for('search')}}">Home</a>
+            <a href="{{ url_for('relivant_splits')}}">Survey</a>
             {% if not admin %}
-                <a href="{{ url_for('login')}}">Admin Login</a>
+                <a href="{{ url_for('login')}}">Login</a>
             {% else %}
                 <a href="{{ url_for('logout')}}">Logout</a>
             {% endif %}
         </div>
-        <h1 onclick="alert(splits_sep)">Search UCU Motions</h1>
+        <h1>Search UCU Motions</h1>
         {% if admin %}
             <form action="/scrape_motions" method="POST" class="scraper">
                 <label for="start">Starting ID:</label>
