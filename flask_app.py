@@ -33,6 +33,12 @@ def is_admin():
         return False
     return current_user.admin
 
+def is_user():
+    if current_user.is_anonymous:
+        return False
+    else:
+        return True
+
 @login_manager.user_loader
 def loader_user(user_id):
     return db.session.scalars(select(User).where(User.id==user_id)).first()
@@ -87,7 +93,7 @@ def search():
         sessions = get_sessions()
         sel_sessions = [sessions[0],sessions[-1]]
         return render_template("index.html",splits=[],motions_content="",search_methods=gv.SEARCH_METHODS,method=gv.SEARCH_METHODS[0],
-                               allow_more=False,n_results=10,admin=is_admin(),actions=actions,sessions=sessions,sel_sessions=sel_sessions)
+                               allow_more=False,n_results=10,user=is_user(),admin=is_admin(),actions=actions,sessions=sessions,sel_sessions=sel_sessions)
 
 @app.route('/scrape_motions', methods=["POST"])
 def scrape_motions():
@@ -113,25 +119,38 @@ def relivant_splits():
     if current_user.is_anonymous:
         return redirect("/")
     else:
-        split = db.session.execute(select(Split,Motion.title,Motion.content).join(Motion)).first()
-        motions = [[str(split[0].id),string_to_safe(split[0].content),string_to_safe(split[2])]]
-        splits = [[split[0].id,split[0].content,split[0].motion_id,split[1],split[0].action]]
-        return render_template("survey.html",splits=splits,motions=motions)
+        user = current_user.id
+        answered = db.session.execute(select(Answer.question).where(Answer.user==user)).all()
+        answered = [a.question for a in answered]
+        question = db.session.execute(select(Question).where(Question.id.notin_(answered))).first()[0]
+        split_ids = [question.split_main,question.split1,question.split2,question.split3,question.split4,question.split5,
+                      question.split6,question.split7,question.split8,question.split9,question.split10]
+        splits = db.session.execute(select(Split,Motion.title,Motion.content).join(Motion).where(Split.id.in_(split_ids))).all()
+        motions = []
+        splits_list = []
+        for s in splits:
+            motions += [[str(s[0].id),string_to_safe(s[0].content),string_to_safe(s[2])]]
+            splits_list += [[s[0].id,s[0].content,s[0].motion_id,s[1],s[0].action]]
+        print(splits_list)
+        return render_template("survey.html",user=is_user(),admin=is_admin(),splits=splits_list,motions=motions)
 
 @app.route('/login', methods=["POST","GET"])
 def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        user = db.session.scalars(select(User).where(User.username==username)).first()
-        if user is not None:
-            salt = user.salt
-            password = bcrypt.hashpw(request.form.get("password").encode("utf-8"),salt)
-            if password == user.password:
-                login_user(user)
-                return redirect("/")
-        return render_template("login.html",admin=is_admin(),failed=True)
+    if is_user():
+        return redirect("/")
     else:
-        return render_template("login.html",admin=is_admin())
+        if request.method == "POST":
+            username = request.form.get("username")
+            user = db.session.scalars(select(User).where(User.username==username)).first()
+            if user is not None:
+                salt = user.salt
+                password = bcrypt.hashpw(request.form.get("password").encode("utf-8"),salt)
+                if password == user.password:
+                    login_user(user)
+                    return redirect("/")
+            return render_template("login.html",user=is_user(),admin=is_admin(),failed=True)
+        else:
+            return render_template("login.html",user=is_user(),admin=is_admin())
 
 @app.route('/register', methods=["POST","GET"])
 def register():
@@ -150,11 +169,11 @@ def register():
                     login_user(user)
                     return redirect("/")
                 else:
-                    render_template("register.html",password=True)
+                    render_template("register.html",user=is_user(),admin=is_admin(),password=True)
             else:
-                render_template("register.html",username=True)
+                render_template("register.html",user=is_user(),admin=is_admin(),username=True)
         else:
-            return render_template("register.html")
+            return render_template("register.html",user=is_user(),admin=is_admin())
     else:
         return redirect("/")
 

@@ -9,9 +9,12 @@
         <div class="nav_bar">
             <a href="{{ url_for('search')}}">Home</a>
             {% if not admin %}
-                <a href="{{ url_for('login')}}">Admin Login</a>
+                <a href="{{ url_for('login')}}">Login</a>
             {% else %}
                 <a href="{{ url_for('logout')}}">Logout</a>
+            {% endif %}
+            {% if admin %}
+                <a href="{{ url_for('register')}}">Register User</a>
             {% endif %}
         </div>
         <form action="/login" method="POST" class="login">
