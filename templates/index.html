@@ -100,7 +100,7 @@
                 <tbody>
                     {% for split in splits %}
                         <tr>
-                            <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')">{{ split[1] }}</td>
+                            <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')"  title="Click to expand">{{ split[1] }}</td>
                             <td style="text-align: center">{{ split[3]|round(2) }}</td>
                             <td><a href={{ split[4] }}>{{ split[5] }}</a></td>
                             <td>{{ split[6] }}</td>
