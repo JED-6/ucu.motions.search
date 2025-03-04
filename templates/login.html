@@ -11,6 +11,7 @@
             {% if not admin %}
                 <a href="{{ url_for('login')}}">Login</a>
             {% else %}
+                <a href="{{ url_for('relivant_splits')}}">Survey</a>
                 <a href="{{ url_for('logout')}}">Logout</a>
             {% endif %}
             {% if admin %}

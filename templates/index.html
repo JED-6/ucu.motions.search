@@ -26,10 +26,10 @@
     <body>
         <div class="nav_bar">
             <a href="{{ url_for('search')}}">Home</a>
-            <a href="{{ url_for('relivant_splits')}}">Survey</a>
             {% if not user %}
                 <a href="{{ url_for('login')}}">Login</a>
             {% else %}
+                <a href="{{ url_for('relivant_splits')}}">Survey</a>
                 <a href="{{ url_for('logout')}}">Logout</a>
             {% endif %}
             {% if admin %}
