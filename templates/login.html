@@ -8,7 +8,7 @@
     <body>
         <div class="nav_bar">
             <a href="{{ url_for('search')}}">Home</a>
-            {% if not admin %}
+            {% if not user %}
                 <a href="{{ url_for('login')}}">Login</a>
             {% else %}
                 <a href="{{ url_for('relivant_splits')}}">Survey</a>
