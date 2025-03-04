@@ -210,7 +210,6 @@ def register():
                     user = User(username=username,password=password_crypt,salt=salt,admin=False)
                     db.session.add(user)
                     db.session.commit()
-                    login_user(user)
                     return redirect("/")
                 else:
                     render_template("register.html",user=is_user(),admin=is_admin(),password=True)
