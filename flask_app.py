@@ -53,20 +53,23 @@ def search():
             SESSION["n_results"] = int(request.form["num_results"])
             SESSION["search_query"] = request.form["search_query"]
             SESSION["method"] = request.form["search_method"]
+            SESSION["start_session"] = request.form["session_start"]
+            SESSION["end_session"] = request.form["session_end"]
+            SESSION["actions"] = request.form.getlist("actions")
         
         all_actions = ["All"] + get_actions()
         sel_acts = []
         acts = []
         for a in all_actions:
-            if a in request.form.getlist("actions"):
+            if a in SESSION["actions"]:
                 sel_acts += [[a,True]]
                 acts += [a]
             else:
                 sel_acts += [[a,False]]
-        if "All" in request.form.getlist("actions"):
+        if "All" in SESSION["actions"]:
             acts = all_actions
         all_sessions = get_sessions()
-        sel_sessions = [request.form["session_start"],request.form["session_end"]]
+        sel_sessions = [SESSION["start_session"],SESSION["end_session"]]
         sessions = []
         start_reached = False
         for sesh in all_sessions:
@@ -139,7 +142,7 @@ def relivant_splits():
                                 split5=bool_rel[4],split6=bool_rel[5],split7=bool_rel[6],split8=bool_rel[7],split9=bool_rel[8],split10=bool_rel[9])
                 db.session.add(answer)
                 db.session.commit()
-            redirect("/survey")
+            return redirect("/survey")
         else:
             user = current_user.id
             answered = db.session.execute(select(Answer.question).where(Answer.user==user)).all()
