@@ -48,11 +48,9 @@ form.query {
 }
 
 textarea {
-  field-sizing: content;
-  max-height: 3lh;
-  min-height: 1lh;
-  max-width: 600px;
-  min-width: 200px;
+  min-height: 2lh;
+  width: 50%;
+  min-width: 600px;
 
   background-color: #fffce2;
   border-radius: 5px;

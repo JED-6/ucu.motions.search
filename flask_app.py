@@ -99,8 +99,8 @@ def search():
         motions = [[str(s[0]),string_to_safe(s[1]),string_to_safe(s[2])] for s in splits]
         SESSION["ids"] = [s[0] for s in splits]
         return render_template("index.html",splits=splits,search_query=SESSION["search_query"],search_methods=gv.SEARCH_METHODS,
-                            method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],admin=is_admin(),
-                            actions=sel_acts,sessions=all_sessions,sel_sessions=sel_sessions,motions=motions,relivant_submit=True)
+                            method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],actions=sel_acts,
+                            sessions=all_sessions,sel_sessions=sel_sessions,motions=motions,relivant_submit=True,user=is_user(),admin=is_admin())
     else:
         if not HAVE_MOTION or not HAVE_SPLIT:
             return render_template("index.html",missing_data=True,user=is_user(),admin=is_admin())
