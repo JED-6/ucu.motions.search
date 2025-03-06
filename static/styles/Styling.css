@@ -126,3 +126,7 @@ form.scraper input[type=text]{
   margin-right:0px;
   margin-left:0px;
 }
+
+#Thank_You{
+  display: none;
+}

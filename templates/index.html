@@ -29,7 +29,6 @@
             {% if not user %}
                 <a href="{{ url_for('login')}}">Login</a>
             {% else %}
-                <a href="{{ url_for('relivant_splits')}}">Survey</a>
                 <a href="{{ url_for('logout')}}">Logout</a>
             {% endif %}
             {% if admin %}
@@ -46,74 +45,88 @@
                 <input type="submit" name="submit_buttom" value="Scrape Motions">
             </form>
         {% endif %}
-        <div id="search_results">
-            <form action="/" method="POST" class="query">
-                <label for="search_query">Enter motion to compare with existing motions:</label>
-                <br>
-                <textarea name="search_query" id="search_query" placeholder="Search motions ...">{{ search_query }}</textarea>
-                <br>
-                <label for="search_method">Select Search Method: </label>
-                <select name="search_method" id = "search_method">
-                    {% for meth in search_methods %}
-                        <option value="{{meth}}" {% if meth==method %} selected {% endif %}>{{meth}}</option>
-                    {% endfor %}
-                </select>
-                <br>
-                <label for="num_results">How many results?: </label>
-                <input type="text" name="num_results" value="{{ n_results }}">
-                <br>
-                <label for="session_start">Sessions from:</label>
-                <select name="session_start">
-                    {% for sesh in sessions %}
-                        <option value="{{sesh}}" {% if sesh==sel_sessions[0] %} selected {% endif %}>{{sesh}}</option>
-                    {% endfor %}
-                </select>
-                <label for="session_end">To:</label>
-                <select name="session_end">
-                    {% for sesh in sessions %}
-                        <option value="{{sesh}}" {% if sesh==sel_sessions[1] %} selected {% endif %}>{{sesh}}</option>
-                    {% endfor %}
-                </select>
-                <br>
-                <label for="action_options">Select which actions to search:</label>
-                <div name="action_options" style="margin-top: 5px;">
-                    {% for a in actions %}
-                        <div class="long_options">
-                            <p>|</p>
-                            <input type="checkbox" name="actions" value="{{a[0]}}" {% if a[1]%}checked{% endif %}>
-                            <label for="{{a[0]}}">{{a[0]}}</label>
-                        </div>
-                    {% endfor %}
-                </div>
-                <input type="submit" name="submit_buttom" value="Search Motions">
-            </form>
-            <table id="results_table">
-                <thead>
-                    <tr>
-                        <th onclick="sortResults(0)" class="header" style="width:55%" title="Order by contents">Contents</th>
-                        <th onclick="sortResults(1)" class="header" style="width:5%"  title="Order by distance">Distance</th>
-                        <th onclick="sortResults(2)" class="header" style="width:20%" title="Order by motion title">Motion Title</th>
-                        <th onclick="sortResults(3)" class="header" style="width:10%" title="Order by session">Session</th>
-                        <th onclick="sortResults(4)" class="header" style="width:10%" title="Order by action">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for split in splits %}
-                        <tr>
-                            <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')"  title="Click to expand">{{ split[1] }}</td>
-                            <td style="text-align: center">{{ split[3]|round(2) }}</td>
-                            <td><a href={{ split[4] }}>{{ split[5] }}</a></td>
-                            <td>{{ split[6] }}</td>
-                            <td>{{ split[7] }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% if allow_more %}
-            <form action="/" method="POST">
-                <input type="submit" name="submit_buttom" value="Show More Results">
-            </form>
-            {% endif %}
-        </div>
+        {% if missing_data %}
+            <h2>The database is empty please contact the administrator</h2>
+        {% else %}
+            <div id="search_results">
+                <form action="/" method="POST" class="query">
+                    <label for="search_query">Enter motion to compare with existing motions:</label>
+                    <br>
+                    <textarea name="search_query" id="search_query" placeholder="Search motions ...">{{ search_query }}</textarea>
+                    <br>
+                    <label for="search_method">Select Search Method: </label>
+                    <select name="search_method" id = "search_method">
+                        {% for meth in search_methods %}
+                            <option value="{{meth}}" {% if meth==method %} selected {% endif %}>{{meth}}</option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label for="num_results">How many results?: </label>
+                    <input type="text" name="num_results" value="{{ n_results }}">
+                    <br>
+                    <label for="session_start">Sessions from:</label>
+                    <select name="session_start">
+                        {% for sesh in sessions %}
+                            <option value="{{sesh}}" {% if sesh==sel_sessions[0] %} selected {% endif %}>{{sesh}}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="session_end">To:</label>
+                    <select name="session_end">
+                        {% for sesh in sessions %}
+                            <option value="{{sesh}}" {% if sesh==sel_sessions[1] %} selected {% endif %}>{{sesh}}</option>
+                        {% endfor %}
+                    </select>
+                    <br>
+                    <label for="action_options">Select which actions to search:</label>
+                    <div name="action_options" style="margin-top: 5px;">
+                        {% for a in actions %}
+                            <div class="long_options">
+                                <p>|</p>
+                                <input type="checkbox" name="actions" value="{{a[0]}}" {% if a[1]%}checked{% endif %}>
+                                <label for="{{a[0]}}">{{a[0]}}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <input type="submit" name="submit_buttom" value="Search Motions">
+                </form>
+                <form action="/relivance" method="POST" class="query">
+                    <table id="results_table">
+                        <thead>
+                            <tr>
+                                <th style="width:5%" >Relivant</th>
+                                <th onclick="sortResults(0)" class="header" title="Order by contents">Contents</th>
+                                <th onclick="sortResults(1)" class="header" style="width:5%"  title="Order by distance">Distance</th>
+                                <th onclick="sortResults(2)" class="header" style="width:20%" title="Order by motion title">Motion Title</th>
+                                <th onclick="sortResults(3)" class="header" style="width:10%" title="Order by session">Session</th>
+                                <th onclick="sortResults(4)" class="header" style="width:5%" title="Order by action">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for split in splits %}
+                                <tr>
+                                    <td style="text-align: center"><input type="checkbox" name="relivant" value="{{split[0]}}"></td>
+                                    <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')"  title="Click to expand">{{ split[1] }}</td>
+                                    <td style="text-align: center">{{ split[3]|round(2) }}</td>
+                                    <td><a href={{ split[4] }}>{{ split[5] }}</a></td>
+                                    <td>{{ split[6] }}</td>
+                                    <td>{{ split[7] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% if relivant_submit %}
+                        <input type="submit" onclick="show_thankyou()" name="submit_buttom" value="Submit Answers">
+                    {% endif %}
+                    {% if thank_you %}
+                        <p>Thank you for submitting result!</p>
+                    {% endif %}
+                </form>
+                {% if allow_more %}
+                <form action="/" method="POST">
+                    <input type="submit" name="submit_buttom" value="Show More Results">
+                </form>
+                {% endif %}
+            </div>
+        {% endif %}
     </body>
 </html>

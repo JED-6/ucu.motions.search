@@ -42,9 +42,12 @@ def initialise_tfidf():
     warnings.filterwarnings("ignore",message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None'")
     all_splits = db.session.execute(select(Split.content)).all()
     all_content = [split.content for split in all_splits]
-    tfidf = TfidfVectorizer(analyzer="word",sublinear_tf=True,max_features=5000,tokenizer=nltk.word_tokenize)
-    tfidf = tfidf.fit(all_content)
-    return tfidf
+    if len(all_content)==0:
+        return False
+    else:
+        tfidf = TfidfVectorizer(analyzer="word",sublinear_tf=True,max_features=5000,tokenizer=nltk.word_tokenize)
+        tfidf = tfidf.fit(all_content)
+        return tfidf
 
 def calc_tf_idf(tfidf,query_sentence,n_closest,actions,sessions):
     query_splits = db.session.execute(select(Split.id,Split.content).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions)).order_by(Split.id)).all()
