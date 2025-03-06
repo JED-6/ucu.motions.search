@@ -51,10 +51,5 @@ def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,CHROMA_DATA_PATH,MODEL,CO
             completed += 1
             print(math.floor(((motion_num-START)/(END-START))*100),"% complete ...")
     print("100% complete")
-    # try:
-    #     print("Encoding splits ...")
-    #     sm.encode_splits(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,START,END,clear_collection=clear_db)
-    # except:
-    #     print("Failed to encode splits")
 
     return str(motions) + " motions scraped from UCU website", missed

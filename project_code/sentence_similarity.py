@@ -1,42 +1,50 @@
-# import chromadb
-# from chromadb.utils import embedding_functions
 from project_code.models import *
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
-def get_split_details(result,UCU_WEBSITE_URL):
-    splits = db.session.execute(select(Split.id,Split.motion_id,Split.action,Motion.content).join(Motion).where(Split.id.in_(result["ids"]))).all()
-    splits = sorted(splits, key=lambda s: result["ids"].index(s.id))
+def get_split_details(results,UCU_WEBSITE_URL):
+    ids = [r[0] for r in results]
+    splits = db.session.execute(select(Split.id,Split.content,Split.motion_id,Split.action,Motion.content.label("motion_content"),Motion.title,Motion.session).join(Motion).where(Split.id.in_(ids))).all()
+    splits = sorted(splits, key=lambda s: ids.index(s.id))
     motion_ids = [split.motion_id for split in splits]
-    result["links"] = [UCU_WEBSITE_URL+str(id) for id in motion_ids]
-    result["action"] = [split.action for split in splits]
-    result["motion"] = [split.content for split in splits]
-    result["ids"] = [split.id for split in splits]
+    for r in range(len(results)):
+        results[r] += [splits[r].content]
+        results[r] += [splits[r].motion_content]
+        results[r] += [UCU_WEBSITE_URL+str(motion_ids[r])]
+        results[r] += [splits[r].title]
+        results[r] += [splits[r].session]
+        results[r] += [splits[r].action]
+    return results
 
-    motions = db.session.execute(select(Motion.id,Motion.title,Motion.session).where(Motion.id.in_(motion_ids))).all()
-    motions = [[m.id for m in motions],[m.title for m in motions],[m.session for m in motions]]
-    result["Title"] = [motions[1][motions[0].index(id)]  for id in motion_ids]
-    result["Session"] = [motions[2][motions[0].index(id)]  for id in motion_ids]
+def compare_transformer_model(query_sentence,model,embeddings,n_closest,actions,sessions):
+    splits = db.session.execute(select(Split.id).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions),Split.id.in_(embeddings["ids"])))
+    indexes = []
+    for s in splits:
+        indexes += [embeddings["ids"].index(s[0])]
+    emb = model.encode(query_sentence)
+    embs = embeddings["embeddings"][indexes,:]
+    similarity = model.similarity(emb,embs).tolist()[0]
+    result = []
+    for i in range(len(indexes)):
+        result += [[embeddings["ids"][indexes[i]],1-similarity[i]]]
+    results = sorted(result, key=lambda x:x[1])
+    return results[:n_closest]
 
-    result = list(zip(result["ids"],result["documents"],result["motion"],result["distances"],result["links"],result["Title"],result["Session"],result["action"]))
-    return result
-
-# def compare(sentence,collection,n_closest,actions,sessions):
-#     query_results = collection.query(query_texts=[sentence],n_results=n_closest,where={"$and":[{"action":{"$in":actions}},{"session":{"$in":sessions}}]})
-
-#     result = {}
-#     result["documents"] = query_results["documents"][0]
-#     result["distances"] = query_results["distances"][0]
-#     result["ids"] = list(map(int,query_results["ids"][0]))
-#     return result
-
-# def initialise_model(CHROMA_DATA_PATH,MODEL,COLLECTION_NAME):
-#     client = chromadb.PersistentClient(path=CHROMA_DATA_PATH)
-#     embedding_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL)
-#     collection = client.get_or_create_collection(name=COLLECTION_NAME,embedding_function=embedding_func,metadata={"hnsw:space":"cosine"})
-#     return collection
+def initialise_transformer_model(MODEL,with_embeddings=False):
+    model = SentenceTransformer("sentence-transformers/"+MODEL)
+    if with_embeddings:
+        splits = db.session.execute(select(Split).where(Split.id<50)).all()
+        contents = [s[0].content for s in splits]
+        embeddings = {}
+        embeddings["embeddings"] = model.encode(contents)
+        embeddings["ids"] = [s[0].id for s in splits]
+        return model, embeddings
+    else:
+        return model
 
 def initialise_tfidf():
     warnings.filterwarnings("ignore",message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None'")
@@ -57,11 +65,8 @@ def calc_tf_idf(tfidf,query_sentence,n_closest,actions,sessions):
     similarity = cosine_similarity(splits_encodings,query_encoding)
 
     similarity = [s[0] for s in similarity]
-    similarity = list(zip([split.id for split in query_splits],similarity,query_content))
+    similarity = list(zip([split.id for split in query_splits],similarity))
     similarity = sorted(similarity, key=lambda x: x[1],reverse=True)
 
-    result = {}
-    result["documents"] = [s[2] for s in similarity[:n_closest]]
-    result["distances"] = [1-s[1] for s in similarity[:n_closest]]
-    result["ids"] = [s[0] for s in similarity[:n_closest]]
-    return result
+    results = [[s[0],1-s[1]] for s in similarity[:n_closest]]
+    return results

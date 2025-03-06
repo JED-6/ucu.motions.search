@@ -21,16 +21,22 @@ login_manager.init_app(app)
 db.init_app(app)
 with app.app_context():
     db.create_all()
-    TFIDF = ss.initialise_tfidf()
-    #COLLECTION = ss.initialise_model(gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME)
-
     HAVE_MOTION = db.session.execute(select(Motion)).all()
     if len(HAVE_MOTION)==0:
         HAVE_MOTION = False
+    else:
+        HAVE_MOTION = True
 
     HAVE_SPLIT = db.session.execute(select(Split)).all()
     if len(HAVE_SPLIT)==0:
         HAVE_SPLIT = False
+    else:
+        HAVE_SPLIT = True
+    if HAVE_SPLIT:
+        print("Initialising TFIDF model  ...")
+        TFIDF = ss.initialise_tfidf()
+        print("Initialising Transformer model  ...")
+        TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True)
 
 def string_to_safe(text):
     text = re.sub("\n","SPECIAL1",text)
@@ -91,12 +97,12 @@ def search():
                 sessions += [sesh]
             if sesh == sel_sessions[1]:
                 break
-        # if SESSION["method"] == gv.SEARCH_METHODS[0]:
-        #     result = ss.compare(SESSION["search_query"],COLLECTION,SESSION["n_results"],acts,sessions)
+        if SESSION["method"] == gv.SEARCH_METHODS[1]:
+            result = ss.compare_transformer_model(SESSION["search_query"],TRANSFORMER,EMBEDINGS,SESSION["n_results"],acts,sessions)
         if SESSION["method"] == gv.SEARCH_METHODS[0]:
             result = ss.calc_tf_idf(TFIDF,SESSION["search_query"],SESSION["n_results"],acts,sessions)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
-        motions = [[str(s[0]),string_to_safe(s[1]),string_to_safe(s[2])] for s in splits]
+        motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
         SESSION["ids"] = [s[0] for s in splits]
         return render_template("index.html",splits=splits,search_query=SESSION["search_query"],search_methods=gv.SEARCH_METHODS,
                             method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],actions=sel_acts,
@@ -225,7 +231,7 @@ def logout():
     return redirect("/")
 
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run(debug=True,use_reloader=False)
 
 
 # @app.route('/survey', methods=["POST","GET"])
