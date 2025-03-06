@@ -3,8 +3,8 @@ import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
-from sentence_transformers import SentenceTransformer
-import numpy as np
+# from sentence_transformers import SentenceTransformer
+# import numpy as np
 
 def get_split_details(results,UCU_WEBSITE_URL):
     ids = [r[0] for r in results]
@@ -20,31 +20,31 @@ def get_split_details(results,UCU_WEBSITE_URL):
         results[r] += [splits[r].action]
     return results
 
-def compare_transformer_model(query_sentence,model,embeddings,n_closest,actions,sessions):
-    splits = db.session.execute(select(Split.id).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions),Split.id.in_(embeddings["ids"])))
-    indexes = []
-    for s in splits:
-        indexes += [embeddings["ids"].index(s[0])]
-    emb = model.encode(query_sentence)
-    embs = embeddings["embeddings"][indexes,:]
-    similarity = model.similarity(emb,embs).tolist()[0]
-    result = []
-    for i in range(len(indexes)):
-        result += [[embeddings["ids"][indexes[i]],1-similarity[i]]]
-    results = sorted(result, key=lambda x:x[1])
-    return results[:n_closest]
+# def compare_transformer_model(query_sentence,model,embeddings,n_closest,actions,sessions):
+#     splits = db.session.execute(select(Split.id).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions),Split.id.in_(embeddings["ids"])))
+#     indexes = []
+#     for s in splits:
+#         indexes += [embeddings["ids"].index(s[0])]
+#     emb = model.encode(query_sentence)
+#     embs = embeddings["embeddings"][indexes,:]
+#     similarity = model.similarity(emb,embs).tolist()[0]
+#     result = []
+#     for i in range(len(indexes)):
+#         result += [[embeddings["ids"][indexes[i]],1-similarity[i]]]
+#     results = sorted(result, key=lambda x:x[1])
+#     return results[:n_closest]
 
-def initialise_transformer_model(MODEL,with_embeddings=False):
-    model = SentenceTransformer("sentence-transformers/"+MODEL)
-    if with_embeddings:
-        splits = db.session.execute(select(Split).where(Split.id<50)).all()
-        contents = [s[0].content for s in splits]
-        embeddings = {}
-        embeddings["embeddings"] = model.encode(contents)
-        embeddings["ids"] = [s[0].id for s in splits]
-        return model, embeddings
-    else:
-        return model
+# def initialise_transformer_model(MODEL,with_embeddings=False):
+#     model = SentenceTransformer("sentence-transformers/"+MODEL)
+#     if with_embeddings:
+#         splits = db.session.execute(select(Split).where(Split.id<50)).all()
+#         contents = [s[0].content for s in splits]
+#         embeddings = {}
+#         embeddings["embeddings"] = model.encode(contents)
+#         embeddings["ids"] = [s[0].id for s in splits]
+#         return model, embeddings
+#     else:
+#         return model
 
 def initialise_tfidf():
     warnings.filterwarnings("ignore",message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None'")

@@ -35,8 +35,8 @@ with app.app_context():
     if HAVE_SPLIT:
         print("Initialising TFIDF model  ...")
         TFIDF = ss.initialise_tfidf()
-        print("Initialising Transformer model  ...")
-        TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True)
+        # print("Initialising Transformer model  ...")
+        # TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True)
 
 def string_to_safe(text):
     text = re.sub("\n","SPECIAL1",text)
@@ -97,8 +97,8 @@ def search():
                 sessions += [sesh]
             if sesh == sel_sessions[1]:
                 break
-        if SESSION["method"] == gv.SEARCH_METHODS[1]:
-            result = ss.compare_transformer_model(SESSION["search_query"],TRANSFORMER,EMBEDINGS,SESSION["n_results"],acts,sessions)
+        # if SESSION["method"] == gv.SEARCH_METHODS[1]:
+        #     result = ss.compare_transformer_model(SESSION["search_query"],TRANSFORMER,EMBEDINGS,SESSION["n_results"],acts,sessions)
         if SESSION["method"] == gv.SEARCH_METHODS[0]:
             result = ss.calc_tf_idf(TFIDF,SESSION["search_query"],SESSION["n_results"],acts,sessions)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
@@ -232,68 +232,3 @@ def logout():
 
 if __name__=="__main__":
     app.run(debug=True,use_reloader=False)
-
-
-# @app.route('/survey', methods=["POST","GET"])
-# def relivant_splits():
-#     if current_user.is_anonymous:
-#         return redirect("/")
-#     else:
-#         if request.method == "POST":
-#             user = current_user.id
-#             question = request.form["q_id"]
-#             exists = db.session.execute(select(Answer).where(Answer.question==question,Answer.user==user)).first()
-#             if exists is None:
-#                 question = db.session.execute(select(Question).where(Question.id==question)).first()[0]
-#                 split_ids = [question.split1,question.split2,question.split3,question.split4,question.split5,
-#                             question.split6,question.split7,question.split8,question.split9,question.split10]
-#                 relivant = request.form.getlist("relivant")
-#                 relivant = [int(r) for r in relivant]
-#                 bool_rel = []
-#                 for id in split_ids:
-#                     if id in relivant:
-#                         bool_rel += [True]
-#                     else:
-#                         bool_rel += [False]
-#                 answer = Answer(question=question.id,user=user,split1=bool_rel[0],split2=bool_rel[1],split3=bool_rel[2],split4=bool_rel[3],
-#                                 split5=bool_rel[4],split6=bool_rel[5],split7=bool_rel[6],split8=bool_rel[7],split9=bool_rel[8],split10=bool_rel[9])
-#                 db.session.add(answer)
-#                 db.session.commit()
-#             return redirect("/survey")
-#         else:
-#             user = current_user.id
-#             answered = db.session.execute(select(Answer.question).where(Answer.user==user)).all()
-#             answered = [a.question for a in answered]
-#             question = db.session.execute(select(Question).where(Question.id.notin_(answered))).first()
-#             if question is not None:
-#                 question = question[0]
-#                 split_ids = [question.split_main,question.split1,question.split2,question.split3,question.split4,question.split5,
-#                             question.split6,question.split7,question.split8,question.split9,question.split10]
-#                 splits = db.session.execute(select(Split,Motion.title,Motion.content).join(Motion).where(Split.id.in_(split_ids))).all()
-#                 motions = []
-#                 splits_list = []
-#                 for s in splits:
-#                     motions += [[str(s[0].id),string_to_safe(s[0].content),string_to_safe(s[2])]]
-#                     splits_list += [[s[0].id,s[0].content,s[0].motion_id,s[1]]]
-#                 split_main = splits_list[0]
-#                 del splits_list[0]
-#                 return render_template("survey.html",user=is_user(),admin=is_admin(),split_main=split_main,splits=splits_list,motions=motions,question=question.id)
-#             else:
-#                 return render_template("survey.html",user=is_user(),admin=is_admin(),finished=True)
-            
-# @app.route('/make_questions', methods=["POST"])
-# def gen_questions():
-#     if is_admin():
-#         splits = db.session.execute(select(Split).join(Motion).where(Motion.session=="2023-2024")).all()
-#         actions = get_actions()
-#         sessions = get_sessions()
-#         del sessions[-1]
-#         for split in splits:
-#             split = split[0]
-#             print(split.id)
-#             result = ss.calc_tf_idf(TFIDF,split.content,10,actions,sessions)
-#             question = Question(split_main=split.id,split1=result["ids"][0],split2=result["ids"][1],split3=result["ids"][2],split4=result["ids"][3],
-#                                 split5=result["ids"][4],split6=result["ids"][5],split7=result["ids"][6],split8=result["ids"][7],split9=result["ids"][8],split10=result["ids"][9])
-#             db.session.add(question)
-#         db.session.commit()
-#     return redirect("/survey")
