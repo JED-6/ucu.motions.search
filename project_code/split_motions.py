@@ -5,12 +5,12 @@ import re
 from project_code.models import *
 import project_code.global_variables as gv
 
+
 def get_split_type(split):
-    institutions = ["Congress","Conference","HE Sector Conference","HESC","HEC","Special FE sector conference","SFESC","FESC","UCU","We"]
     for a in gv.ACTIONS:
             if re.search("^"+a,split.strip()):
                 return a
-            for i in institutions:
+            for i in gv.INSTITUTIONS:
                 if (re.search(i+r" ([a-zA-Z]* ){0,3}"+a.lower(),split.strip()) or re.search(i.lower()+r" ([a-zA-Z]* ){0,3}"+a.lower(),split.strip()) or
                     re.search(i+r" ([a-zA-Z]* ){0,3}"+a,split.strip()) or re.search(i.lower()+r" ([a-zA-Z]* ){0,3}"+a,split.strip())):
                     return a
@@ -28,7 +28,8 @@ def split_sentence(split,action):
     splits = re.split("(?<! [a-zA-Z])(?<!ii)(?<!iii)(?<!iv)(?<!vi)(?<!vii)(?<!viii)(?<!ix)(?<!^[a-zA-Z])(?<![0-9])\\.(?![a-z]| [a-z]|[0-9]| [0-9])",split)
     splits_action = []
     for s in splits:
-        if not re.search("^[`|'|)|\"|”|‘|’]*$",s.strip()):
+        s = s.strip()
+        if not re.match("^(`|'|\\(|\\)|\"|”|‘|’|:|\\.)*$",s) and not re.match("^(`|'|\\(|\\)|\"|”|‘|’|:|\\.|s|"+gv.WORDS+")*$",s,re.IGNORECASE):
             splits_action += [[re.sub("\n"," ",s).strip(),action]]
     return splits_action
 
