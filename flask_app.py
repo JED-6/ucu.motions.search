@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, url_for
 from flask import session as SESSION
 import project_code.sentence_similarity as ss
 from project_code.models import *
@@ -54,6 +54,11 @@ def is_user():
         return False
     else:
         return True
+    
+@app.before_request
+def initialise_var():
+    if not SESSION.get("refresh"):
+        SESSION["refresh"] = False
 
 @login_manager.user_loader
 def loader_user(user_id):
@@ -64,7 +69,9 @@ def search():
     if request.method == "POST":
         if not HAVE_MOTION or not HAVE_SPLIT:
             return render_template("index.html",missing_data=True,user=is_user(),admin=is_admin())
-        if request.form["submit_buttom"] == "Show More Results":
+        if SESSION["refresh"]:
+            SESSION["refresh"] = False
+        elif request.form["submit_buttom"] == "Show More Results":
             SESSION["n_results"] += SESSION["n_initial_results"]
         else:
             SESSION["n_initial_results"] = int(request.form["num_results"])
@@ -180,6 +187,8 @@ def relivance():
             result = RelivantResults(user_id=user,query_id=query.id,split_id=id,relivant=rel)
             db.session.add(result)
         db.session.commit()
+        SESSION["refresh"] = True
+        return redirect(url_for("search"), code=307)
         
     return redirect("/")
 
