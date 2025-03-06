@@ -171,20 +171,17 @@ def relivance():
             query = SearchQuery(question=SESSION["search_query"])
             db.session.add(query)
             db.session.commit()
-        else:
-            results = db.session.execute(select(RelivantResults).where(RelivantResults.query_id==query.id,RelivantResults.user_id==user,RelivantResults.split_id.in_(ids))).all()
-            if len(results)>0:
-                for r in results:
-                    if not r[0].relivant and str(r[0].split_id) in relivant:
-                        db.session.execute(update(RelivantResults).where(RelivantResults.query_id==query.id,RelivantResults.user_id==user,
-                                                                         RelivantResults.split_id==r[0].split_id).values(relivant=True))
-                    del ids[ids.index(r[0].split_id)]
         for id in ids:
             if str(id) in relivant:
                 rel = True
             else:
                 rel = False
-            result = RelivantResults(user_id=user,query_id=query.id,split_id=id,relivant=rel)
+            id_obj = db.session.scalars(select(func.max(RelivantResults.id))).first()
+            if id_obj is not None:
+                rel_id = id_obj+1
+            else:
+                rel_id = 1
+            result = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=rel)
             db.session.add(result)
         db.session.commit()
         SESSION["refresh"] = True
@@ -221,7 +218,10 @@ def register():
                 if password == confirm:
                     salt = bcrypt.gensalt()
                     password_crypt = bcrypt.hashpw(password.encode("utf-8"),salt)
-                    user = User(username=username,password=password_crypt,salt=salt,admin=False)
+                    ids = db.session.execute(select(User.id)).all()
+                    ids = [id.id for id in ids]
+                    id = gen_id(existing=ids)
+                    user = User(id=id,username=username,password=password_crypt,salt=salt,admin=False)
                     db.session.add(user)
                     db.session.commit()
                     return redirect("/")

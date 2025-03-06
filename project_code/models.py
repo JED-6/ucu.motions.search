@@ -4,6 +4,7 @@ from typing import List
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from sqlalchemy_utils import database_exists, create_database
 from flask_login import UserMixin, AnonymousUserMixin
+import random
 
 #run in console to create db
 #from flask_app import app
@@ -19,6 +20,7 @@ db = SQLAlchemy(model_class=Base)
 
 class RelivantResults(Base):
     __tablename__ = "relivant_results"
+    id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"),primary_key=True)
     query_id: Mapped[int] = mapped_column(ForeignKey("searchquery.id"),primary_key=True)
     split_id: Mapped[int] = mapped_column(ForeignKey("split.id"),primary_key=True)
@@ -70,37 +72,6 @@ class SearchQuery(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     question: Mapped[str] = mapped_column(Text,nullable=False,deferred=True)
     relivant: Mapped[List["RelivantResults"]] = relationship(back_populates="search_query")
-    
-
-# class Question(Base):
-#     id = db.Column(db.Integer,primary_key=True,autoincrement=True)
-#     split_main = db.Column(db.Integer,nullable=False)
-#     split1 = db.Column(db.Integer)
-#     split2 = db.Column(db.Integer)
-#     split3 = db.Column(db.Integer)
-#     split4 = db.Column(db.Integer)
-#     split5 = db.Column(db.Integer)
-#     split6 = db.Column(db.Integer)
-#     split7 = db.Column(db.Integer)
-#     split8 = db.Column(db.Integer)
-#     split9 = db.Column(db.Integer)
-#     split10 = db.Column(db.Integer)
-#     answers = db.relationship("Answer")
-
-# class Answer(Base):
-#     id = db.Column(db.Integer,primary_key=True,autoincrement=True)
-#     question = db.Column(db.Integer,db.ForeignKey("question.id"),nullable=False)
-#     user = db.Column(db.Integer,db.ForeignKey("user.id"),nullable=False)
-#     split1 = db.Column(db.Boolean)
-#     split2 = db.Column(db.Boolean)
-#     split3 = db.Column(db.Boolean)
-#     split4 = db.Column(db.Boolean)
-#     split5 = db.Column(db.Boolean)
-#     split6 = db.Column(db.Boolean)
-#     split7 = db.Column(db.Boolean)
-#     split8 = db.Column(db.Boolean)
-#     split9 = db.Column(db.Boolean)
-#     split10 = db.Column(db.Boolean)
 
 def clear_motions_db():
     splits = db.session.execute(select(Split)).all()
@@ -132,3 +103,13 @@ def get_sessions():
     if len(sessions)==0:
         sessions = ["None"]
     return sessions
+
+def gen_id(existing=[]):
+    available = []
+    max_val = 100000
+    m = 1
+    while len(available)==0:
+        available = list(set(range(0,max_val*m))-set(existing))
+        m = m * 10
+    id = random.choice(available)
+    return id
