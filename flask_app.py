@@ -33,8 +33,10 @@ with app.app_context():
     else:
         HAVE_SPLIT = True
     if HAVE_SPLIT:
-        print("Initialising TFIDF model  ...")
+        print("Initialising TFIDF model ...")
+        print("Initialising Word Overlap Tokens ...")
         TFIDF = ss.initialise_tfidf()
+        WO_TOKENS = ss.initialise_WO()
         # print("Initialising Transformer model  ...")
         # TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True)
 
@@ -108,6 +110,8 @@ def search():
         #     result = ss.compare_transformer_model(SESSION["search_query"],TRANSFORMER,EMBEDINGS,SESSION["n_results"],acts,sessions)
         if SESSION["method"] == gv.SEARCH_METHODS[0]:
             result = ss.calc_tf_idf(TFIDF,SESSION["search_query"],SESSION["n_results"],acts,sessions)
+        if SESSION["method"] == gv.SEARCH_METHODS[1]:
+            result = ss.word_overlap(SESSION["search_query"],WO_TOKENS,SESSION["n_results"],acts,sessions)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
         motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
         SESSION["ids"] = [s[0] for s in splits]
@@ -240,4 +244,4 @@ def logout():
     return redirect("/")
 
 if __name__=="__main__":
-    app.run(debug=True,use_reloader=False)
+    app.run(debug=True) #,use_reloader=False

@@ -1,10 +1,12 @@
 from project_code.models import *
+import re
 import nltk
+from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
-# from sentence_transformers import SentenceTransformer
 # import numpy as np
+# from sentence_transformers import SentenceTransformer
 
 def get_split_details(results,UCU_WEBSITE_URL):
     ids = [r[0] for r in results]
@@ -68,5 +70,40 @@ def calc_tf_idf(tfidf,query_sentence,n_closest,actions,sessions):
     similarity = list(zip([split.id for split in query_splits],similarity))
     similarity = sorted(similarity, key=lambda x: x[1],reverse=True)
 
+    results = [[s[0],1-s[1]] for s in similarity[:n_closest]]
+    return results
+
+def normalise_text(text):
+    lemmatizer = nltk.stem.WordNetLemmatizer()
+    text_tokens = nltk.tokenize.word_tokenize(text)
+    text_tokens = [lemmatizer.lemmatize(t) for t in text_tokens]
+    tokens = []
+    for t in text_tokens:
+        t = t.lower()
+        t = re.sub(r"[^a-z]","",t)
+        if t not in stopwords.words("english") and t!="":
+            tokens.append(t)
+    return tokens
+
+def initialise_WO():
+    query_splits = db.session.execute(select(Split.id,Split.content)).all()
+    splits_tokens = []
+    for s in query_splits:
+        norm = normalise_text(s.content)
+        if len(norm)>0:
+            splits_tokens += [[s.id,norm]]
+    return splits_tokens
+
+def word_overlap(query_sentence,splits_tokens,n_closest,actions,sessions):
+    ids = [s[0] for s in splits_tokens]
+    query_splits = db.session.execute(select(Split.id,Split.content).join(Motion).where(Split.id.in_(ids),Split.action.in_(actions),
+                                                                             Motion.session.in_(sessions)).order_by(Split.id)).all()
+    query_tokens = set(normalise_text(query_sentence))
+    similarity = []
+    for s in range(len(query_splits)):
+        i = ids.index(query_splits[s].id)
+        common = query_tokens.intersection(splits_tokens[i][1])
+        similarity += [[query_splits[s].id,(len(common)/len(query_tokens))*(len(query_tokens)/len(splits_tokens[i][1]))]]
+    similarity = sorted(similarity, key=lambda x: x[1],reverse=True)
     results = [[s[0],1-s[1]] for s in similarity[:n_closest]]
     return results
