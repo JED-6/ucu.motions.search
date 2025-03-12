@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select, func, text, Boolean, Text, String, ForeignKey, update
+from sqlalchemy import select, func, text, Boolean, Text, String, ForeignKey, update, Integer
 from typing import List
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from sqlalchemy_utils import database_exists, create_database
@@ -71,6 +71,7 @@ class SearchQuery(Base):
     __tablename__ = "searchquery"
     id: Mapped[int] = mapped_column(primary_key=True)
     question: Mapped[str] = mapped_column(Text,nullable=False,deferred=True)
+    split_id: Mapped[int] = mapped_column(Integer,nullable=True)
     relivant: Mapped[List["RelivantResults"]] = relationship(back_populates="search_query")
 
 def clear_motions_db():

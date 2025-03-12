@@ -4,24 +4,6 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/Styling.css') }}">
         <script src="{{ url_for('static', filename='dynamic/sort.js') }}"></script>
         <title>Search UCU Congress Motions</title>
-
-        {% if motions|length>0 %}
-            <script type="text/javascript">
-                var motions_raw,init_sep,motions_sep,motions;
-                motions_raw = "{{motions}}";
-                init_sep = motions_raw.split("&#39;");
-                motions_sep = []
-                for (var i=0;i<init_sep.length;i++){
-                    if (i%2==1){
-                        motions_sep.push(init_sep[i])
-                    }
-                }
-                motions = []
-                for (var i=0;i<motions_sep.length;i+=3){
-                    motions.push([motions_sep[i],replace_special(motions_sep[i+1]),replace_special(motions_sep[i+2]),false]);
-                }
-            </script>
-        {% endif %}
     </head>
     <body>
         <div class="nav_bar">
@@ -32,7 +14,7 @@
                 <a href="{{ url_for('logout')}}">Logout</a>
             {% endif %}
             {% if admin %}
-                <a href="{{ url_for('relivant_splits')}}">Survey</a>
+                <a href="{{ url_for('survey')}}">Survey</a>
                 <a href="{{ url_for('register')}}">Register User</a>
             {% endif %}
         </div>
@@ -47,7 +29,8 @@
         {% endif %}
         {% if not finished %}
             <p>Which of the following motions snippets are relivant to the following snippet?:</p>
-            <p><strong>{{split_main[1]|safe}}</strong></p>
+            <p id="main_split_id"><strong>{{split_main}}</strong></p>
+            <p id="main_motion_id">{{motion_main}}</p>
             <form action="/survey" method="POST" class="query">
                 <table id="results_table">
                     <thead>
@@ -61,8 +44,8 @@
                         {% for split in splits %}
                             <tr>
                                 <td style="text-align: center"><input type="checkbox" name="relivant" value="{{split[0]}}"></td>
-                                <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')" title="Click to expand">{{ split[1] }}</td>
-                                <td>{{ split[3] }}</td>
+                                <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')" title="Click to expand">{{ split[2] }}</td>
+                                <td><a href={{ split[4] }}>{{ split[5] }}</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -72,6 +55,31 @@
             </form>
         {% else %}
             <p>Thank you! You have answered all the questions.</p>
+        {% endif %}
+        {% if motions|length>0 %}
+            <script type="text/javascript">
+                var motions_raw,init_sep,motions_sep,motions,s_main,m_motion;;
+                motions_raw = "{{motions}}";
+                init_sep = motions_raw.split("&#39;");
+                motions_sep = []
+                for (var i=0;i<init_sep.length;i++){
+                    if (i%2==1){
+                        motions_sep.push(init_sep[i])
+                    }
+                }
+                motions = []
+                for (var i=0;i<motions_sep.length;i+=3){
+                    motions.push([motions_sep[i],replace_special(motions_sep[i+1]),replace_special(motions_sep[i+2]),false]);
+                }
+
+                
+                m_main = "{{motion_main}}";
+                s_main = "{{split_main}}";
+                m_main = replace_special(m_main);
+                s_main = replace_special(s_main);
+                m_main = m_main.replaceAll(s_main,'<span style="color:red;font-weight:bold;">'+s_main+"</span>");
+                document.getElementById("main_motion_id").innerHTML = m_main;
+            </script>
         {% endif %}
     </body>
 </html>

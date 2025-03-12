@@ -36,7 +36,8 @@ with app.app_context():
         print("Initialising TFIDF model ...")
         TFIDF = ss.initialise_tfidf()
         print("Initialising Word Overlap Tokens ...")
-        WO_TOKENS = ss.initialise_WO()
+        WO_TOKENS = ""
+        # WO_TOKENS = ss.initialise_WO()
         print("Initialising Transformer model  ...")
         TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True)
 
@@ -193,6 +194,59 @@ def relivance():
         
     return redirect("/")
 
+@app.route('/survey', methods=["POST","GET"])
+def survey():
+    if not is_admin():
+        return redirect("/")
+    else:
+        if request.method == "POST":
+            user = current_user.id
+            relivant = request.form.getlist("relivant")
+            ids = SESSION["result_ids"]
+            query = db.session.execute(select(SearchQuery).where(SearchQuery.id==SESSION["query_id"])).first()
+            query=query[0]
+            for id in ids:
+                id_obj = db.session.scalars(select(func.max(RelivantResults.id))).first()
+                if id_obj is not None:
+                    rel_id = id_obj+1
+                else:
+                    rel_id = 1
+                if str(id) in relivant:
+                    rel_res = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=True)
+                else:
+                    rel_res = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=False)
+                db.session.add(rel_res)
+            db.session.commit()
+            return redirect("/survey")
+        else:
+            user = current_user.id
+            answered = db.session.execute(select(SearchQuery.id).join(RelivantResults).where(RelivantResults.user_id==user).distinct()).all()
+            answered_ids = []
+            for a in answered:
+                answered_ids += a
+            query = db.session.execute(select(SearchQuery).where(SearchQuery.id.not_in(answered_ids))).first()
+            if query is None:
+                split = db.session.execute(select(Split).join(Motion).where(Split.id.not_in(answered_ids),Motion.session=="2023-2024").order_by(func.random())).first()
+                if split is None:
+                    return redirect("/")
+                else:
+                    split = split[0]
+                query = SearchQuery(question=split.content,split_id=split.id)
+                db.session.add(query)
+                db.session.commit()
+            else:
+                query = query[0]
+            acts = ["All"] + get_actions()
+            sessions = get_sessions()
+            del sessions[sessions.index("2023-2024")]
+            result = ss.compare_transformer_model(query.question,TRANSFORMER,EMBEDINGS,10,acts,sessions)
+            splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
+            motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
+            SESSION["result_ids"] = [s[0] for s in splits]
+            SESSION["query_id"] = query.id
+            motion_main = string_to_safe(db.session.execute(select(Motion.content).join(Split).where(Split.id==query.split_id)).first()[0])
+            return render_template("survey.html",user=is_user(),admin=is_admin(),split_main=string_to_safe(query.question),motion_main=motion_main,splits=splits,search_query=query.question,motions=motions)
+
 @app.route('/login', methods=["POST","GET"])
 def login():
     if is_user():
@@ -244,4 +298,4 @@ def logout():
     return redirect("/")
 
 if __name__=="__main__":
-    app.run(debug=True,use_reloader=False)
+    app.run(debug=True) #,use_reloader=False)
