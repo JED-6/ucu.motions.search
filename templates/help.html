@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/Styling.css') }}">
+        <script src="{{ url_for('static', filename='dynamic/sort.js') }}"></script>
+        <title>Search UCU Congress Motions</title>
+    </head>
+    <body>
+        <div class="nav_bar">
+            <a href="{{ url_for('search')}}">Home</a>
+            <a href="{{ url_for('help')}}">Help</a>
+            {% if not user %}
+                <a href="{{ url_for('login')}}">Login</a>
+            {% else %}
+                <a href="{{ url_for('logout')}}">Logout</a>
+            {% endif %}
+            {% if admin %}
+                <a href="{{ url_for('survey')}}">Survey</a>
+                <a href="{{ url_for('register')}}">Register User</a>
+            {% endif %}
+        </div>
+        <h1>How to use website?</h1>
+        <h2>Index</h2>
+        <ul>
+            <li><a href="#snippet">What is a Snippet</a></li>
+            <li><a href="#search">Performing a Search</a></li>
+            <li><a href="#results">Exploring Results</a></li>
+            <li><a href="#relevant">Submit Relevant</a></li>
+            <li><a href="#faqs">Frequently Asked Questions</a></li>
+        </ul>
+        <h2 id="snippet">What is a Snippet</h2>
+        <p>A snippet is a part of a motion, normally only one sentence, that generally corresponds to a single action such as a resolve or belief ect.</p>
+        <h2 id="search">Performing a Search</h2>
+        <p>On the “Home” page, you can search existing UCU motions to find similar or relevant snippets.</p>
+        <img src="/static/images/Nav bar home2.png">
+        <ol>
+            <li>In the text box, enter a word, sentence or short phrase that you would like to find relevant snippets for.</li>
+            <img src="/static/images/Search box.png">
+            <li>Select which search method you would like to use, “tf.idf” is currently the only option for this version.</li>
+            <img src="/static/images/Search method.png">
+            <li>Enter how many results you would like to return. There is an option to show more results after your search.</li>
+            <img src="/static/images/Number results.png">
+            <li>Select which sessions you would like to search. Only motions passed during or between those session will be searched.</li>
+            <img src="/static/images/Select sessions.png">
+            <li>Select which actions you would like to search. Note that some snippets in “Other” may belong to other actions but were unable to be correctly identified, so for full coverage select “Other”. Selecting the “All” action will override any other action selection and search all action types.</li>
+            <img src="/static/images/Select Actions.png">
+            <li>Click the “Search Motions” button and results will be displayed in the table below.</li>
+            <img src="/static/images/Search button.png">
+        </ol>
+        <h2 id="results">Exploring Results</h2>
+        <ul>
+            <li>Results will initially be sorted by distance, showing snippets that are most similar or most relevant to your search input at the top.</li>
+            <li>If you click on a snippets contents, it will expand to show the full motion, with the snippet highlighted.</li>
+            <img src="/static/images/Expanded Snippet.png">
+            <li>If you click on one of the column headers it will order the results by that column.</li>
+            <img src="/static/images/Column Header.png">
+            <li>If you click on a snippet's motion title, it will take you to that motion's page, on the UCU website.</li>
+            <img src="/static/images/Motion Title.png">
+            <li>If you click “Show More Results,” at the bottom of the page, it will return more results, using your initial search criteria.</li>
+            <img src="/static/images/Show more.png">
+        </ul>
+        <h2 id="relevant">Submit Relevant</h2>
+        <p>Please help us evaluate our search results! When you perform a search, if you select which of the results you think are relevant in the relevant column and then click the “Submit Relevant” button below the results table, we will log your search and which results you have marked as relevant. If you have an account, please log in before performing this function to allow us to differentiate results marked by people with experience of UCU motions, from other users who may user the website.</p>
+        <img src="/static/images/Submit relevent.png">
+        <h2 id="faqs">FAQs</h2>
+        <h3>Snippet not highlighted when expanded to full motion?</h3>
+        <p>Unfortunately, due to the formatting of the motions on the UCU website and the way snippets are extracted, sometimes the original motion breaks the snippet over multiple lines, which prevents it from being correctly identified and highlighted.</p>
+        <h3>Why are there so many actions?</h3>
+        <p>Actions are identified by the words used in the motions and while there are common actions, there is no limit to the range of actions in UCU motions.</p>
+        <h3>Why is there only one search method?</h3>
+        <p>Due to restrictions of the current website host platform, the other search methods are not useable on the live website.</p>
+        <h3>What does “tf.idf” stand for?</h3>
+        <p>It stands for term frequency inverse document frequency. It is a search method that makes use of how often each word appears within a snippet and how many snippets contain each word, to calculate a similarity or distance score to the search snippet, provided by the user.</p>
+        <h3>Why do the same snippets keep appearing at the bottom?</h3>
+        <p>The results are ordered by their distance to the search snippet but if the distance is the max 1 then the rest of the results are returned in the order they exist in the database.</p>
+        <h3>Do I need to login to use the website?</h3>
+        <p>No, you don't need to be logged in to use the website. But if you have an account, please log in before performing the “Submit Relevant” function to allow us to differentiate results marked by people with experience of UCU motions, from other users who may user the website.</p>
+    </body>
+</html>

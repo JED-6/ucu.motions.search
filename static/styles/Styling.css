@@ -21,7 +21,7 @@ body {
   font-size: 20px;
 }
 
-h1 {
+h1, h2, h3 {
   color: #2b135e;
   margin-bottom: 5px;
 }
@@ -127,4 +127,11 @@ form.scraper input[type=text]{
 
 #Thank_You{
   display: none;
+}
+
+img{
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: solid black 5px;
+  border-radius: 5px;
 }

@@ -26,6 +26,7 @@
     <body>
         <div class="nav_bar">
             <a href="{{ url_for('search')}}">Home</a>
+            <a href="{{ url_for('help')}}">Help</a>
             {% if not user %}
                 <a href="{{ url_for('login')}}">Login</a>
             {% else %}
@@ -51,7 +52,7 @@
         {% else %}
             <div id="search_results">
                 <form action="/" method="POST" class="query">
-                    <label for="search_query">Enter a snippet (e.g. one sentence or clause) of a motion and search to find motions containing similar snippets:</label>
+                    <label for="search_query">Enter a word, sentence or short phrase that you would like to find relevant snippets for:</label>
                     <br>
                     <textarea name="search_query" id="search_query" placeholder="Search motions ..." oninput="this.style.height = 'auto';this.style.height = this.scrollHeight + 'px'">{{ search_query }}</textarea>
                     <br>
@@ -91,9 +92,6 @@
                     <input type="submit" name="submit_buttom" value="Search Motions">
                 </form>
                 <form action="/relivance" method="POST" class="survey">
-                    <p>Search results will be displayed in the table below.
-                        <br>You can click on the column headers to sort by that column and click on a result's content to expand it and show 
-                        the full motion with the relevant snippet highlighted.</p>
                     <table id="results_table">
                         <thead>
                             <tr>
@@ -119,7 +117,7 @@
                         </tbody>
                     </table>
                     {% if relivant_submit %}
-                        <input type="submit" onclick="show_thankyou()" name="submit_buttom" value="Submit Answers">
+                        <input type="submit" onclick="show_thankyou()" name="submit_buttom" value="Submit Relevant">
                     {% endif %}
                     {% if thank_you %}
                         <p>Thank you for submitting result!</p>

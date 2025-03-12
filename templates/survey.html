@@ -8,6 +8,7 @@
     <body>
         <div class="nav_bar">
             <a href="{{ url_for('search')}}">Home</a>
+            <a href="{{ url_for('help')}}">Help</a>
             {% if not user %}
                 <a href="{{ url_for('login')}}">Login</a>
             {% else %}

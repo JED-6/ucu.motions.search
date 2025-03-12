@@ -36,8 +36,7 @@ with app.app_context():
         print("Initialising TFIDF model ...")
         TFIDF = ss.initialise_tfidf()
         print("Initialising Word Overlap Tokens ...")
-        WO_TOKENS = ""
-        # WO_TOKENS = ss.initialise_WO()
+        WO_TOKENS = ss.initialise_WO()
         print("Initialising Transformer model  ...")
         TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True)
 
@@ -247,6 +246,10 @@ def survey():
             motion_main = string_to_safe(db.session.execute(select(Motion.content).join(Split).where(Split.id==query.split_id)).first()[0])
             return render_template("survey.html",user=is_user(),admin=is_admin(),split_main=string_to_safe(query.question),motion_main=motion_main,splits=splits,search_query=query.question,motions=motions)
 
+@app.route('/help', methods=["GET"])
+def help():
+    return render_template("help.html",user=is_user(),admin=is_admin())
+
 @app.route('/login', methods=["POST","GET"])
 def login():
     if is_user():
@@ -298,4 +301,4 @@ def logout():
     return redirect("/")
 
 if __name__=="__main__":
-    app.run(debug=True) #,use_reloader=False)
+    app.run(debug=True)
