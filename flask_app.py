@@ -59,11 +59,6 @@ def is_user():
         return False
     else:
         return True
-    
-@app.before_request
-def initialise_var():
-    if not SESSION.get("refresh"):
-        SESSION["refresh"] = False
 
 @login_manager.user_loader
 def loader_user(user_id):
@@ -73,9 +68,7 @@ def loader_user(user_id):
 def search():
     if request.method == "POST":
         if not HAVE_MOTION or not HAVE_SPLIT:
-            return render_template("index.html",missing_data=True,user=is_user(),admin=is_admin())
-        if SESSION["refresh"]:
-            SESSION["refresh"] = False
+            return redirect("/")
         elif request.form["submit_buttom"] == "Show More Results":
             SESSION["n_results"] += SESSION["n_initial_results"]
         else:
@@ -86,57 +79,57 @@ def search():
             SESSION["start_session"] = request.form["session_start"]
             SESSION["end_session"] = request.form["session_end"]
             SESSION["actions"] = request.form.getlist("actions")
-        
-        all_actions = ["All"] + get_actions()
-        sel_acts = []
-        acts = []
-        for a in all_actions:
-            if a in SESSION["actions"]:
-                sel_acts += [[a,True]]
-                acts += [a]
-            else:
-                sel_acts += [[a,False]]
-        if "All" in SESSION["actions"]:
-            acts = all_actions
-        all_sessions = get_sessions()
-        sel_sessions = [SESSION["start_session"],SESSION["end_session"]]
-        sessions = []
-        start_reached = False
-        for sesh in all_sessions:
-            if sesh == sel_sessions[0]:
-                start_reached = True
-            if start_reached:
-                sessions += [sesh]
-            if sesh == sel_sessions[1]:
-                break
-        if SESSION["method"] == gv.SEARCH_METHODS[0]:
-            result = ss.calc_tf_idf(TFIDF,SESSION["search_query"],SESSION["n_results"],acts,sessions)
-        elif SESSION["method"] == gv.SEARCH_METHODS[1]:
-            result = ss.word_overlap(SESSION["search_query"],WO_TOKENS,SESSION["n_results"],acts,sessions)
-        elif SESSION["method"] == gv.SEARCH_METHODS[2]:
-            result = ss.compare_bi_encoder(SESSION["search_query"],BI_ENCODER,EMBEDINGS,SESSION["n_results"],acts,sessions,strip=gv.STRIP)
-        elif SESSION["method"] == gv.SEARCH_METHODS[3]:
-            result = ss.compare_cross_encoder(CROSS_ENCODER,SESSION["search_query"],SESSION["n_results"],acts,sessions,strip=gv.STRIP)
-        elif SESSION["method"] == gv.SEARCH_METHODS[4]:
-            result = ss.tfidf_cross_encoder(TFIDF,CROSS_ENCODER,SESSION["search_query"],SESSION["n_results"],acts,sessions,strip=gv.STRIP)
-        splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
-        motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
-        SESSION["ids"] = [s[0] for s in splits]
-        return render_template("index.html",splits=splits,search_query=SESSION["search_query"],search_methods=gv.SEARCH_METHODS,
-                            method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],actions=sel_acts,
-                            sessions=all_sessions,sel_sessions=sel_sessions,motions=motions,relivant_submit=True,user=is_user(),admin=is_admin())
+        SESSION["search"] = True
+        return redirect("/")
     else:
         if not HAVE_MOTION or not HAVE_SPLIT:
             return render_template("index.html",missing_data=True,user=is_user(),admin=is_admin())
         else:
-            actions = ["All"]
-            actions += get_actions()
-            actions = [[a,False] for a in actions]
-            actions[0][1] = True
-            sessions = get_sessions()
-            sel_sessions = [sessions[0],sessions[-1]]
-            return render_template("index.html",splits=[],motions_content="",search_methods=gv.SEARCH_METHODS,method=gv.SEARCH_METHODS[0],
-                                allow_more=False,n_results=10,user=is_user(),admin=is_admin(),actions=actions,sessions=sessions,sel_sessions=sel_sessions)
+            all_actions = ["All"] + get_actions()
+            all_sessions = get_sessions()
+            if not SESSION.get("search"):
+                actions = [[a,False] for a in all_actions]
+                actions[0][1] = True
+                sel_sessions = [all_sessions[0],all_sessions[-1]]
+                return render_template("index.html",splits=[],motions_content="",search_methods=gv.SEARCH_METHODS,method=gv.SEARCH_METHODS[0],
+                                    allow_more=False,n_results=10,user=is_user(),admin=is_admin(),actions=actions,sessions=all_sessions,sel_sessions=sel_sessions)
+            else:
+                sel_acts = []
+                acts = []
+                for a in all_actions:
+                    if a in SESSION["actions"]:
+                        sel_acts += [[a,True]]
+                        acts += [a]
+                    else:
+                        sel_acts += [[a,False]]
+                if "All" in SESSION["actions"]:
+                    acts = all_actions
+                sel_sessions = [SESSION["start_session"],SESSION["end_session"]]
+                sessions = []
+                start_reached = False
+                for sesh in all_sessions:
+                    if sesh == sel_sessions[0]:
+                        start_reached = True
+                    if start_reached:
+                        sessions += [sesh]
+                    if sesh == sel_sessions[1]:
+                        break
+                if SESSION["method"] == gv.SEARCH_METHODS[0]:
+                    result = ss.calc_tf_idf(TFIDF,SESSION["search_query"],SESSION["n_results"],acts,sessions)
+                elif SESSION["method"] == gv.SEARCH_METHODS[1]:
+                    result = ss.word_overlap(SESSION["search_query"],WO_TOKENS,SESSION["n_results"],acts,sessions)
+                elif SESSION["method"] == gv.SEARCH_METHODS[2]:
+                    result = ss.compare_bi_encoder(SESSION["search_query"],BI_ENCODER,EMBEDINGS,SESSION["n_results"],acts,sessions,strip=gv.STRIP)
+                elif SESSION["method"] == gv.SEARCH_METHODS[3]:
+                    result = ss.compare_cross_encoder(CROSS_ENCODER,SESSION["search_query"],SESSION["n_results"],acts,sessions,strip=gv.STRIP)
+                elif SESSION["method"] == gv.SEARCH_METHODS[4]:
+                    result = ss.tfidf_cross_encoder(TFIDF,CROSS_ENCODER,SESSION["search_query"],SESSION["n_results"],acts,sessions,strip=gv.STRIP)
+                splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
+                motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
+                SESSION["ids"] = [s[0] for s in splits]
+                return render_template("index.html",splits=splits,search_query=SESSION["search_query"],search_methods=gv.SEARCH_METHODS,
+                                    method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],actions=sel_acts,
+                                    sessions=all_sessions,sel_sessions=sel_sessions,motions=motions,relivant_submit=True,user=is_user(),admin=is_admin())
 
 @app.route('/scrape_motions', methods=["POST"])
 def scrape():
@@ -195,8 +188,7 @@ def relivance():
             result = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=rel)
             db.session.add(result)
         db.session.commit()
-        SESSION["refresh"] = True
-        return redirect(url_for("search"), code=307)
+        return redirect("/")
         
     return redirect("/")
 
