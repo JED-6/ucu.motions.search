@@ -36,9 +36,10 @@ with app.app_context():
         print("Initialising TFIDF model ...")
         TFIDF = ss.initialise_tfidf()
         print("Initialising Word Overlap Tokens ...")
-        WO_TOKENS = ss.initialise_WO()
+        #WO_TOKENS = ss.initialise_WO()
+        WO_TOKENS = ""
         print("Initialising Transformer model  ...")
-        TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True)
+        TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True,strip=gv.STRIP)
 
 def string_to_safe(text):
     text = re.sub("\n","SPECIAL1",text)
@@ -111,7 +112,7 @@ def search():
         elif SESSION["method"] == gv.SEARCH_METHODS[1]:
             result = ss.word_overlap(SESSION["search_query"],WO_TOKENS,SESSION["n_results"],acts,sessions)
         elif SESSION["method"] == gv.SEARCH_METHODS[2]:
-             result = ss.compare_transformer_model(SESSION["search_query"],TRANSFORMER,EMBEDINGS,SESSION["n_results"],acts,sessions)
+             result = ss.compare_transformer_model(SESSION["search_query"],TRANSFORMER,EMBEDINGS,SESSION["n_results"],acts,sessions,strip=gv.STRIP)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
         motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
         SESSION["ids"] = [s[0] for s in splits]
@@ -242,7 +243,7 @@ def survey():
             sessions = get_sessions()
             del sessions[sessions.index("2023-2024")]
             if SESSION["method2"] == gv.SEARCH_METHODS[2]:
-                result = ss.compare_transformer_model(query.question,TRANSFORMER,EMBEDINGS,10,acts,sessions)
+                result = ss.compare_transformer_model(query.question,TRANSFORMER,EMBEDINGS,10,acts,sessions,strip=gv.STRIP)
             elif SESSION["method2"] == gv.SEARCH_METHODS[1]:
                 result = ss.word_overlap(query.question,WO_TOKENS,10,acts,sessions)
             else:

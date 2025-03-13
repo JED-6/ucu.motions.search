@@ -8,6 +8,25 @@ import warnings
 # import numpy as np
 from sentence_transformers import SentenceTransformer
 
+def normalise_text(text):
+    lemmatizer = nltk.stem.WordNetLemmatizer()
+    text_tokens = nltk.tokenize.word_tokenize(text)
+    text_tokens = [lemmatizer.lemmatize(t) for t in text_tokens]
+    tokens = []
+    for t in text_tokens:
+        t = t.lower()
+        t = re.sub(r"[^a-z]","",t)
+        if t not in stopwords.words("english") and t!="":
+            tokens.append(t)
+    return tokens
+
+def strip_text(text):
+    tokens = normalise_text(text)
+    stripped_text = ""
+    for t in tokens:
+        stripped_text += " " + t
+    return stripped_text
+
 def get_split_details(results,UCU_WEBSITE_URL):
     ids = [r[0] for r in results]
     splits = db.session.execute(select(Split.id,Split.content,Split.motion_id,Split.action,Motion.content.label("motion_content"),Motion.title,Motion.session).join(Motion).where(Split.id.in_(ids))).all()
@@ -22,12 +41,15 @@ def get_split_details(results,UCU_WEBSITE_URL):
         results[r] += [splits[r].action]
     return results
 
-def compare_transformer_model(query_sentence,model,embeddings,n_closest,actions,sessions):
+def compare_transformer_model(query_sentence,model,embeddings,n_closest,actions,sessions,strip=False):
     splits = db.session.execute(select(Split.id).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions),Split.id.in_(embeddings["ids"])))
     indexes = []
     for s in splits:
         indexes += [embeddings["ids"].index(s[0])]
-    emb = model.encode(query_sentence)
+    if strip:
+        emb = model.encode(strip_text(query_sentence))
+    else:
+        emb = model.encode(query_sentence)
     embs = embeddings["embeddings"][indexes,:]
     similarity = model.similarity(emb,embs).tolist()[0]
     result = []
@@ -36,11 +58,17 @@ def compare_transformer_model(query_sentence,model,embeddings,n_closest,actions,
     results = sorted(result, key=lambda x:x[1])
     return results[:n_closest]
 
-def initialise_transformer_model(MODEL,with_embeddings=False):
-    model = SentenceTransformer("sentence-transformers/"+MODEL)
+def initialise_transformer_model(MODEL,with_embeddings=False,with_prompt=False,strip=False):
+    if with_prompt:
+        model = SentenceTransformer("sentence-transformers/"+MODEL,prompts={"Similarity":"Identify semantically similar text:"},default_prompt_name="Similarity")
+    else:
+        model = SentenceTransformer("sentence-transformers/"+MODEL)
     if with_embeddings:
         splits = db.session.execute(select(Split).where(Split.id<50)).all()
-        contents = [s[0].content for s in splits]
+        if strip:
+            contents = [strip_text(s[0].content) for s in splits]
+        else:
+            contents = [s[0].content for s in splits]
         embeddings = {}
         embeddings["embeddings"] = model.encode(contents)
         embeddings["ids"] = [s[0].id for s in splits]
@@ -72,18 +100,6 @@ def calc_tf_idf(tfidf,query_sentence,n_closest,actions,sessions):
 
     results = [[s[0],1-s[1]] for s in similarity[:n_closest]]
     return results
-
-def normalise_text(text):
-    lemmatizer = nltk.stem.WordNetLemmatizer()
-    text_tokens = nltk.tokenize.word_tokenize(text)
-    text_tokens = [lemmatizer.lemmatize(t) for t in text_tokens]
-    tokens = []
-    for t in text_tokens:
-        t = t.lower()
-        t = re.sub(r"[^a-z]","",t)
-        if t not in stopwords.words("english") and t!="":
-            tokens.append(t)
-    return tokens
 
 def initialise_WO():
     query_splits = db.session.execute(select(Split.id,Split.content)).all()
