@@ -25,6 +25,7 @@ class RelivantResults(Base):
     query_id: Mapped[int] = mapped_column(ForeignKey("searchquery.id"),primary_key=True)
     split_id: Mapped[int] = mapped_column(ForeignKey("split.id"),primary_key=True)
     relivant: Mapped[Boolean] = mapped_column(Boolean,nullable=False)
+    method: Mapped[str] = mapped_column(String(20),nullable=True)
 
     user:Mapped["User"] = relationship(back_populates="relivant")
     search_query:Mapped["SearchQuery"] = relationship(back_populates="relivant")

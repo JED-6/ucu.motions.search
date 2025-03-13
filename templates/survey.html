@@ -33,12 +33,18 @@
             <p id="main_split_id"><strong>{{split_main}}</strong></p>
             <p id="main_motion_id">{{motion_main}}</p>
             <form action="/survey" method="POST" class="query">
+                <select name="search_method" id = "search_method">
+                    {% for meth in search_methods %}
+                        <option value="{{meth}}" {% if meth==method %} selected {% endif %}>{{meth}}</option>
+                    {% endfor %}
+                </select>
                 <table id="results_table">
                     <thead>
                         <tr>
                             <th style="width:5%" >Relivant</th>
                             <th                  >Snippet</th>
                             <th style="width:25%">Motion Title</th>
+                            <th style="width:5%" >Distance</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,6 +53,7 @@
                                 <td style="text-align: center"><input type="checkbox" name="relivant" value="{{split[0]}}"></td>
                                 <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')" title="Click to expand">{{ split[2] }}</td>
                                 <td><a href={{ split[4] }}>{{ split[5] }}</a></td>
+                                <td style="text-align: center">{{ split[1]|round(2) }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

@@ -211,15 +211,18 @@ def survey():
                 else:
                     rel_id = 1
                 if str(id) in relivant:
-                    rel_res = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=True)
+                    rel_res = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=True,method=SESSION["method2"])
                 else:
-                    rel_res = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=False)
+                    rel_res = RelivantResults(id=rel_id,user_id=user,query_id=query.id,split_id=id,relivant=False,method=SESSION["method2"])
                 db.session.add(rel_res)
             db.session.commit()
+            SESSION["method2"] = request.form["search_method"]
             return redirect("/survey")
         else:
+            if not SESSION.get("method2"):
+                SESSION["method2"] = gv.SEARCH_METHODS[0]
             user = current_user.id
-            answered = db.session.execute(select(SearchQuery.id).join(RelivantResults).where(RelivantResults.user_id==user).distinct()).all()
+            answered = db.session.execute(select(SearchQuery.id).join(RelivantResults).where(RelivantResults.user_id==user,RelivantResults.method==SESSION["method2"]).distinct()).all()
             answered_ids = []
             for a in answered:
                 answered_ids += a
@@ -238,13 +241,19 @@ def survey():
             acts = ["All"] + get_actions()
             sessions = get_sessions()
             del sessions[sessions.index("2023-2024")]
-            result = ss.compare_transformer_model(query.question,TRANSFORMER,EMBEDINGS,10,acts,sessions)
+            if SESSION["method2"] == gv.SEARCH_METHODS[2]:
+                result = ss.compare_transformer_model(query.question,TRANSFORMER,EMBEDINGS,10,acts,sessions)
+            elif SESSION["method2"] == gv.SEARCH_METHODS[1]:
+                result = ss.word_overlap(query.question,WO_TOKENS,10,acts,sessions)
+            else:
+                result = ss.calc_tf_idf(TFIDF,query.question,10,acts,sessions)
             splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
             motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
             SESSION["result_ids"] = [s[0] for s in splits]
             SESSION["query_id"] = query.id
             motion_main = string_to_safe(db.session.execute(select(Motion.content).join(Split).where(Split.id==query.split_id)).first()[0])
-            return render_template("survey.html",user=is_user(),admin=is_admin(),split_main=string_to_safe(query.question),motion_main=motion_main,splits=splits,search_query=query.question,motions=motions)
+            return render_template("survey.html",user=is_user(),admin=is_admin(),split_main=string_to_safe(query.question),
+                                   motion_main=motion_main,splits=splits,search_query=query.question,motions=motions,search_methods=gv.SEARCH_METHODS,method=SESSION["method2"])
 
 @app.route('/help', methods=["GET"])
 def help():
@@ -301,4 +310,4 @@ def logout():
     return redirect("/")
 
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run(debug=True)#,use_reloader=False)
