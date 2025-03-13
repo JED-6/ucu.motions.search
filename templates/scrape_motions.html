@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles/Styling.css') }}">
+    </head>
+    <body>
+        <div class="nav_bar">
+            <a href="{{ url_for('search')}}">Home</a>
+            <a href="{{ url_for('help')}}">Help</a>
+            {% if not user %}
+                <a href="{{ url_for('login')}}">Login</a>
+            {% else %}
+                <a href="{{ url_for('logout')}}">Logout</a>
+            {% endif %}
+            {% if admin %}
+                <a href="{{ url_for('survey')}}">Survey</a>
+                <a href="{{ url_for('register')}}">Register User</a>
+                <a href="{{ url_for('scrape')}}">Scrape Motions</a>
+            {% endif %}
+        </div>
+        <h1>Scrape Motions</h1>
+        {% if admin %}
+            {% if delete %}
+                {% if m_ids|length>0 %}
+                    <h2>Existing Motions Found</h2>
+                    <p>{{m_ids}}</p>
+                {% endif %}
+                {% if s_ids|length>0 %}
+                    <h2>Existing Splits Found</h2>
+                    <p>{{s_ids}}</p>
+                {% endif %}
+                <h2>Do you want to delete the above?:</h2>
+                <form action="/scrape_motions" method="POST" class="scraper">
+                    <input type="submit" name="submit_buttom" value="Delete">
+                    <input type="submit" name="submit_buttom" value="Don't Delete">
+                </form>
+            {% else %}
+                <form action="/scrape_motions" method="POST" class="scraper">
+                    <label for="start_scrape">Starting ID:</label>
+                    <input type="text" name="start_scrape" placeholder="7925">
+                    <label for="end_scrape">Final ID:</label>
+                    <input type="text" name="end_scrape" placeholder="10967">
+                    <input type="submit" name="submit_buttom" value="Scrape Motions">
+                </form>
+                {% if scraped %}
+                    <p><strong>{{message}}</strong></p>
+                    {% if missed|length >0 %}
+                        <p><strong>Unable to scrape motions:</strong></p>
+                        <p><strong>{{missed}}</strong></p>
+                    {% else %}
+                        <p><strong>All motions successfully scraped</strong></p>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endif %}
+    </body>
+</html>

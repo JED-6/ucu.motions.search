@@ -35,18 +35,10 @@
             {% if admin %}
                 <a href="{{ url_for('survey')}}">Survey</a>
                 <a href="{{ url_for('register')}}">Register User</a>
+                <a href="{{ url_for('scrape')}}">Scrape Motions</a>
             {% endif %}
         </div>
         <h1>Search UCU Motions</h1>
-        {% if admin %}
-            <form action="/scrape_motions" method="POST" class="scraper">
-                <label for="start">Starting ID:</label>
-                <input type="text" name="start" placeholder="7925">
-                <label for="end">Final ID:</label>
-                <input type="text" name="end" placeholder="10967">
-                <input type="submit" name="submit_buttom" value="Scrape Motions">
-            </form>
-        {% endif %}
         {% if missing_data %}
             <h2>The database is empty please contact the administrator</h2>
         {% else %}

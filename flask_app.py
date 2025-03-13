@@ -18,6 +18,19 @@ app.secret_key = "Top secret"
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+def initialise_models():
+    global TFIDF, WO_TOKENS, BI_ENCODER, EMBEDINGS, CROSS_ENCODER
+    TFIDF = ss.initialise_tfidf()
+    print("Initialising TFIDF model ...")
+    TFIDF = ss.initialise_tfidf()
+    print("Initialising Word Overlap Tokens ...")
+    #WO_TOKENS = ss.initialise_WO()
+    WO_TOKENS = ""
+    print("Initialising Bi-Encoder model  ...")
+    BI_ENCODER, EMBEDINGS = ss.initialise_bi_encoder(gv.BI_ENCODER_NAME,with_embeddings=True,strip=gv.STRIP)
+    print("Initialising Cross-Encoder model  ...")
+    CROSS_ENCODER = ss.initialise_cross_encoder(gv.CROSS_ENCODER_NAME)
+
 db.init_app(app)
 with app.app_context():
     db.create_all()
@@ -33,15 +46,7 @@ with app.app_context():
     else:
         HAVE_SPLIT = True
     if HAVE_SPLIT:
-        print("Initialising TFIDF model ...")
-        TFIDF = ss.initialise_tfidf()
-        print("Initialising Word Overlap Tokens ...")
-        #WO_TOKENS = ss.initialise_WO()
-        WO_TOKENS = ""
-        print("Initialising Bi-Encoder model  ...")
-        BI_ENCODER, EMBEDINGS = ss.initialise_bi_encoder(gv.BI_ENCODER_NAME,with_embeddings=True,strip=gv.STRIP)
-        print("Initialising Cross-Encoder model")
-        CROSS_ENCODER = ss.initialise_cross_encoder(gv.CROSS_ENCODER_NAME)
+        initialise_models()
 
 def string_to_safe(text):
     text = re.sub("\n","SPECIAL1",text)
@@ -59,6 +64,13 @@ def is_user():
         return False
     else:
         return True
+
+@app.before_request
+def initialise_var():
+    if not SESSION.get("scrape"):
+        SESSION["scrape"] = False
+    if not SESSION.get("delete"):
+        SESSION["delete"] = False
 
 @login_manager.user_loader
 def loader_user(user_id):
@@ -131,35 +143,64 @@ def search():
                                     method=SESSION["method"],allow_more=True,n_results=SESSION["n_initial_results"],actions=sel_acts,
                                     sessions=all_sessions,sel_sessions=sel_sessions,motions=motions,relivant_submit=True,user=is_user(),admin=is_admin())
 
-@app.route('/scrape_motions', methods=["POST"])
+@app.route('/scrape_motions', methods=["POST","GET"])
 def scrape():
-    global TFIDF, HAVE_MOTION, HAVE_SPLIT
+    global HAVE_MOTION, HAVE_SPLIT
     #19984
     if is_admin():
-        start = int(request.form["start"])
-        end = int(request.form["end"])+1
-        splits = db.session.execute(select(Split).where(Split.motion_id>=start,Split.motion_id<end)).all()
-        #add warning about deleting existing splits and motions
-        split_ids = []
-        for s in splits:
-            split_ids += [s[0].id]
-            db.session.delete(s[0])
-        motions = db.session.execute(select(Motion).where(Motion.id>=start,Motion.id<end)).all()
-        motion_ids = []
-        for m in motions:
-            motion_ids += [m[0].id]
-            db.session.delete(m[0])
-        db.session.commit()
-        message, missed = scrape_motions(gv.UCU_WEBSITE_URL,gv.UCU_WEBSITE_CLASSES,gv.CHROMA_DATA_PATH,gv.MODEL,gv.COLLECTION_NAME,start,end)
-        TFIDF = ss.initialise_tfidf()
-        HAVE_MOTION = db.session.execute(select(Motion)).all()
-        if len(HAVE_MOTION)==0:
-            HAVE_MOTION = False
+        if request.method == "POST":
+            if request.form["submit_buttom"] == "Delete":
+                splits = db.session.execute(select(Split).where(Split.motion_id>=SESSION["start_scrape"],Split.motion_id<SESSION["end_scrape"])).all()
+                motions = db.session.execute(select(Motion).where(Motion.id>=SESSION["start_scrape"],Motion.id<SESSION["end_scrape"])).all()
+                split_ids = []
+                for s in splits:
+                    split_ids += [s[0].id]
+                    db.session.delete(s[0])
+                motion_ids = []
+                for m in motions:
+                    motion_ids += [m[0].id]
+                    db.session.delete(m[0])
+                db.session.commit()
+            elif request.form["submit_buttom"] == "Don't Delete":
+                return redirect("/scrape_motions")
+            else:
+                SESSION["start_scrape"] = int(request.form["start_scrape"])
+                SESSION["end_scrape"] = int(request.form["end_scrape"])+1
+            
+                motions = db.session.execute(select(Motion.id).where(Motion.id>=SESSION["start_scrape"],Motion.id<SESSION["end_scrape"])).all()
+                m_ids = [m[0] for m in motions]
+                splits = db.session.execute(select(Split.id).where(Split.motion_id>=SESSION["start_scrape"],Split.motion_id<SESSION["end_scrape"])).all()
+                s_ids = [s[0] for s in splits]
+                if len(m_ids)>0 or len(s_ids)>0:
+                    SESSION["delete"] = True
+                    SESSION["m_ids"] = m_ids
+                    SESSION["s_ids"] = s_ids
+                    return redirect("/scrape_motions")
+            start = SESSION["start_scrape"]
+            end = SESSION["end_scrape"]
+            message, missed = scrape_motions(gv.UCU_WEBSITE_URL,gv.UCU_WEBSITE_CLASSES,start,end)
+            SESSION["scrape_message"] = message
+            SESSION["missed"] = missed
+            SESSION["scrape"] = True
+            HAVE_MOTION = db.session.execute(select(Motion)).all()
+            if len(HAVE_MOTION)==0:
+                HAVE_MOTION = False
 
-        HAVE_SPLIT = db.session.execute(select(Split)).all()
-        if len(HAVE_SPLIT)==0:
-            HAVE_SPLIT = False
-    return redirect("/")
+            HAVE_SPLIT = db.session.execute(select(Split)).all()
+            if len(HAVE_SPLIT)==0:
+                HAVE_SPLIT = False
+            if HAVE_SPLIT:
+                initialise_models()
+            return redirect("/scrape_motions")
+        else:
+            if SESSION["scrape"]:
+                SESSION["scrape"] = False
+                return render_template("scrape_motions.html",user=is_user(),admin=is_admin(),scraped=True,message=SESSION["scrape_message"],missed=SESSION["missed"])
+            if SESSION["delete"]:
+                SESSION["delete"] = False
+                return render_template("scrape_motions.html",user=is_user(),admin=is_admin(),delete=True,m_ids=SESSION["m_ids"],s_ids=SESSION["s_ids"])
+            else:
+                return render_template("scrape_motions.html",user=is_user(),admin=is_admin())
 
 @app.route('/relivance', methods=["POST"])
 def relivance():
@@ -225,7 +266,7 @@ def survey():
             answered_ids = []
             for a in answered:
                 answered_ids += a
-            query = db.session.execute(select(SearchQuery).where(SearchQuery.id.not_in(answered_ids))).first()
+            query = db.session.execute(select(SearchQuery).where(SearchQuery.id.not_in(answered_ids),SearchQuery.split_id!=None)).first()
             if query is None:
                 split = db.session.execute(select(Split).join(Motion).where(Split.id.not_in(answered_ids),Motion.session=="2023-2024").order_by(func.random())).first()
                 if split is None:
@@ -244,9 +285,9 @@ def survey():
                 result = ss.compare_bi_encoder(query.question,BI_ENCODER,EMBEDINGS,10,acts,sessions,strip=gv.STRIP)
             elif SESSION["method2"] == gv.SEARCH_METHODS[1]:
                 result = ss.word_overlap(query.question,WO_TOKENS,10,acts,sessions)
-            elif SESSION["method"] == gv.SEARCH_METHODS[3]:
+            elif SESSION["method2"] == gv.SEARCH_METHODS[3]:
                 result = ss.compare_cross_encoder(CROSS_ENCODER,query.question,10,acts,sessions,strip=gv.STRIP)
-            elif SESSION["method"] == gv.SEARCH_METHODS[4]:
+            elif SESSION["method2"] == gv.SEARCH_METHODS[4]:
                 result = ss.tfidf_cross_encoder(TFIDF,CROSS_ENCODER,query.question,10,acts,sessions,strip=gv.STRIP)
             else:
                 result = ss.calc_tf_idf(TFIDF,query.question,10,acts,sessions)

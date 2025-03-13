@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from project_code.models import Motion, Split, db, clear_motions_db
 import project_code.split_motions as sm
 
-def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,CHROMA_DATA_PATH,MODEL,COLLECTION_NAME,START,END,clear_db=False):
+def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,START,END,clear_db=False):
     if clear_db:
         #CLEARS DATABASE
         clear_motions_db()
