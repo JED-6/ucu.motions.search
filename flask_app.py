@@ -38,8 +38,10 @@ with app.app_context():
         print("Initialising Word Overlap Tokens ...")
         #WO_TOKENS = ss.initialise_WO()
         WO_TOKENS = ""
-        print("Initialising Transformer model  ...")
-        TRANSFORMER, EMBEDINGS = ss.initialise_transformer_model(gv.MODEL,with_embeddings=True,strip=gv.STRIP)
+        print("Initialising Bi-Encoder model  ...")
+        BI_ENCODER, EMBEDINGS = ss.initialise_bi_encoder(gv.BI_ENCODER_NAME,with_embeddings=True,strip=gv.STRIP)
+        print("Initialising Cross-Encoder model")
+        CROSS_ENCODER = ss.initialise_cross_encoder(gv.CROSS_ENCODER_NAME)
 
 def string_to_safe(text):
     text = re.sub("\n","SPECIAL1",text)
@@ -112,7 +114,11 @@ def search():
         elif SESSION["method"] == gv.SEARCH_METHODS[1]:
             result = ss.word_overlap(SESSION["search_query"],WO_TOKENS,SESSION["n_results"],acts,sessions)
         elif SESSION["method"] == gv.SEARCH_METHODS[2]:
-             result = ss.compare_transformer_model(SESSION["search_query"],TRANSFORMER,EMBEDINGS,SESSION["n_results"],acts,sessions,strip=gv.STRIP)
+            result = ss.compare_bi_encoder(SESSION["search_query"],BI_ENCODER,EMBEDINGS,SESSION["n_results"],acts,sessions,strip=gv.STRIP)
+        elif SESSION["method"] == gv.SEARCH_METHODS[3]:
+            result = ss.compare_cross_encoder(CROSS_ENCODER,SESSION["search_query"],SESSION["n_results"],acts,sessions,strip=gv.STRIP)
+        elif SESSION["method"] == gv.SEARCH_METHODS[4]:
+            result = ss.tfidf_cross_encoder(TFIDF,CROSS_ENCODER,SESSION["search_query"],SESSION["n_results"],acts,sessions,strip=gv.STRIP)
         splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)
         motions = [[str(s[0]),string_to_safe(s[2]),string_to_safe(s[3])] for s in splits]
         SESSION["ids"] = [s[0] for s in splits]
@@ -243,9 +249,13 @@ def survey():
             sessions = get_sessions()
             del sessions[sessions.index("2023-2024")]
             if SESSION["method2"] == gv.SEARCH_METHODS[2]:
-                result = ss.compare_transformer_model(query.question,TRANSFORMER,EMBEDINGS,10,acts,sessions,strip=gv.STRIP)
+                result = ss.compare_bi_encoder(query.question,BI_ENCODER,EMBEDINGS,10,acts,sessions,strip=gv.STRIP)
             elif SESSION["method2"] == gv.SEARCH_METHODS[1]:
                 result = ss.word_overlap(query.question,WO_TOKENS,10,acts,sessions)
+            elif SESSION["method"] == gv.SEARCH_METHODS[3]:
+                result = ss.compare_cross_encoder(CROSS_ENCODER,query.question,10,acts,sessions,strip=gv.STRIP)
+            elif SESSION["method"] == gv.SEARCH_METHODS[4]:
+                result = ss.tfidf_cross_encoder(TFIDF,CROSS_ENCODER,query.question,10,acts,sessions,strip=gv.STRIP)
             else:
                 result = ss.calc_tf_idf(TFIDF,query.question,10,acts,sessions)
             splits = ss.get_split_details(result,gv.UCU_WEBSITE_URL)

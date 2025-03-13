@@ -1,4 +1,5 @@
-MODEL = "all-mpnet-base-v2"
+BI_ENCODER_NAME = "all-mpnet-base-v2"
+CROSS_ENCODER_NAME = "msmarco-MiniLM-L6-en-de-v1"
 STRIP = True
 
 ACTIONS = ["Resolve","Demand","Instruct","Insist","Mandate","Believe","Note","Call","Reaffirm","Affirm","Agree","Support",
@@ -21,4 +22,4 @@ UCU_WEBSITE_URL = "https://policy.web.ucu.org.uk/motion-information/?pdb="
 UCU_WEBSITE_CLASSES = {"title":"motion_title","session":"session","meeting":"meeting_link","date":"meeting_date","status":"status","number":"motion_number","content":"motion_text",
                         "proposer":"proposing_body","amended":"amended","subcommittee":"sub_committee","notes":"notes","listing":"ref"}
 
-SEARCH_METHODS = ["tf.idf","Word Overlap",MODEL]
+SEARCH_METHODS = ["tf.idf","Word Overlap",BI_ENCODER_NAME,CROSS_ENCODER_NAME,"tf.idf with Cross Encoder"]

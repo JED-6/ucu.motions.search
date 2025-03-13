@@ -6,7 +6,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import warnings
 # import numpy as np
-from sentence_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer, CrossEncoder
 
 def normalise_text(text):
     lemmatizer = nltk.stem.WordNetLemmatizer()
@@ -41,28 +41,34 @@ def get_split_details(results,UCU_WEBSITE_URL):
         results[r] += [splits[r].action]
     return results
 
-def compare_transformer_model(query_sentence,model,embeddings,n_closest,actions,sessions,strip=False):
-    splits = db.session.execute(select(Split.id).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions),Split.id.in_(embeddings["ids"])))
-    indexes = []
-    for s in splits:
-        indexes += [embeddings["ids"].index(s[0])]
-    if strip:
-        emb = model.encode(strip_text(query_sentence))
+def initialise_cross_encoder(model_name):
+    model = CrossEncoder("cross-encoder/"+model_name)
+    return model
+
+def compare_cross_encoder(model,query_sentence,n_closest,actions,sessions,strip=False,ids=[]):
+    if len(ids)==0:
+        splits = db.session.execute(select(Split.id,Split.content).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions))).all()
+        ids = [s[0] for s in splits]
     else:
-        emb = model.encode(query_sentence)
-    embs = embeddings["embeddings"][indexes,:]
-    similarity = model.similarity(emb,embs).tolist()[0]
-    result = []
-    for i in range(len(indexes)):
-        result += [[embeddings["ids"][indexes[i]],1-similarity[i]]]
-    results = sorted(result, key=lambda x:x[1])
+        splits = db.session.execute(select(Split.id,Split.content).where(Split.id.in_(ids))).all()
+    if strip:
+        splits = [strip_text(s[1]) for s in splits]
+        query_sentence = strip_text(query_sentence)
+    else:
+        splits = [s[1] for s in splits]
+    pairs = [[query_sentence,s] for s in splits]
+    scores = model.predict(pairs)
+    results = []
+    for f in range(len(ids)):
+        results += [[ids[f],scores[f]]]
+    results = sorted(results, key=lambda x:x[1],reverse=True)
     return results[:n_closest]
 
-def initialise_transformer_model(MODEL,with_embeddings=False,with_prompt=False,strip=False):
+def initialise_bi_encoder(model_name,with_embeddings=False,with_prompt=False,strip=False):
     if with_prompt:
-        model = SentenceTransformer("sentence-transformers/"+MODEL,prompts={"Similarity":"Identify semantically similar text:"},default_prompt_name="Similarity")
+        model = SentenceTransformer("sentence-transformers/"+model_name,prompts={"Similarity":"Identify semantically similar text:"},default_prompt_name="Similarity")
     else:
-        model = SentenceTransformer("sentence-transformers/"+MODEL)
+        model = SentenceTransformer("sentence-transformers/"+model_name)
     if with_embeddings:
         splits = db.session.execute(select(Split).where(Split.id<50)).all()
         if strip:
@@ -75,6 +81,23 @@ def initialise_transformer_model(MODEL,with_embeddings=False,with_prompt=False,s
         return model, embeddings
     else:
         return model
+
+def compare_bi_encoder(query_sentence,model,embeddings,n_closest,actions,sessions,strip=False):
+    splits = db.session.execute(select(Split.id).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions),Split.id.in_(embeddings["ids"]))).all()
+    indexes = []
+    for s in splits:
+        indexes += [embeddings["ids"].index(s[0])]
+    if strip:
+        emb = model.encode(strip_text(query_sentence))
+    else:
+        emb = model.encode(query_sentence)
+    embs = embeddings["embeddings"][indexes,:]
+    similarity = model.similarity(emb,embs).tolist()[0]
+    results = []
+    for i in range(len(indexes)):
+        results += [[embeddings["ids"][indexes[i]],1-similarity[i]]]
+    results = sorted(results, key=lambda x:x[1])
+    return results[:n_closest]
 
 def initialise_tfidf():
     warnings.filterwarnings("ignore",message="The parameter 'token_pattern' will not be used since 'tokenizer' is not None'")
@@ -122,4 +145,10 @@ def word_overlap(query_sentence,splits_tokens,n_closest,actions,sessions):
         similarity += [[query_splits[s].id,(len(common)/len(query_tokens))*(len(query_tokens)/len(splits_tokens[i][1]))]]
     similarity = sorted(similarity, key=lambda x: x[1],reverse=True)
     results = [[s[0],1-s[1]] for s in similarity[:n_closest]]
+    return results
+
+def tfidf_cross_encoder(tfidf,model,query_sentence,n_closest,actions,sessions,strip=False):
+    results = calc_tf_idf(tfidf,query_sentence,n_closest*10,actions,sessions)
+    ids = [r[0] for r in results]
+    results = compare_cross_encoder(model,query_sentence,n_closest,actions,sessions,strip=strip,ids=ids)
     return results
