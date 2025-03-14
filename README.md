@@ -24,7 +24,7 @@
 - The "Survey" page is very similar to the "Submit Relevant" button on the "Home" page but instead the searches are created automatically using splits from the 2023-2024 session as the search query and limiting results to any other session.
 - The "Scrape Motions" page allows admins to extract motions from the UCU website. Enter the start and end ID (they can be the same) of pages you would like to search. The ID should match the number in the URL link for that motion.
 
-![URL for motion on UCU website](UCU_motion_URL.png)
+![URL for motion on UCU website](static/images/UCU_motion_URL.png)
 - For details on how to use "Home" page see the "Help" page.
 ## What does it do?
 This website allows you to extract motions from the UCU website and to search them using a varitiy of search methods.
