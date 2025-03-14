@@ -43,7 +43,7 @@
             <h2>The database is empty please contact the administrator</h2>
         {% else %}
             <div id="search_results">
-                <form action="/" method="POST" class="query">
+                <form action="/" method="POST" class="query" onsubmit="validateForm(event,1)" name ="search">
                     <label for="search_query">Enter a word, sentence or short phrase that you would like to find relevant snippets for:</label>
                     <br>
                     <textarea name="search_query" id="search_query" placeholder="Search motions ..." oninput="this.style.height = 'auto';this.style.height = this.scrollHeight + 'px'">{{ search_query }}</textarea>
@@ -56,7 +56,7 @@
                     </select>
                     <br>
                     <label for="num_results">How many relevant snippets would you like to be returned?: </label>
-                    <input type="text" name="num_results" value="{{ n_results }}">
+                    <input type="text" name="num_results" id="num_results" value="{{ n_results }}">
                     <br>
                     <label for="session_start">Search sessions from:</label>
                     <select name="session_start">

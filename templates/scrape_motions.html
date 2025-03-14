@@ -2,6 +2,7 @@
 <html>
     <head>
         <link rel="stylesheet" href="{{ url_for('static', filename='styles/Styling.css') }}">
+        <script src="{{ url_for('static', filename='dynamic/sort.js') }}"></script>
     </head>
     <body>
         <div class="nav_bar">
@@ -35,7 +36,7 @@
                     <input type="submit" name="submit_buttom" value="Don't Delete">
                 </form>
             {% else %}
-                <form action="/scrape_motions" method="POST" class="scraper">
+                <form action="/scrape_motions" method="POST" class="scraper"  onsubmit="validateForm(event,2)" name="scraper">
                     <label for="start_scrape">Starting ID:</label>
                     <input type="text" name="start_scrape" placeholder="7925">
                     <label for="end_scrape">Final ID:</label>

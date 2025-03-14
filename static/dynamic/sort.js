@@ -82,3 +82,49 @@ function sortResults(column){
         }
     }
 }
+
+function validateForm(event,form){
+    if(form==1){
+        var num = document.forms["search"]["num_results"].value;
+        if (isNaN(num)){
+            event.preventDefault();
+            alert("Number of results must be a number!");
+        }
+        else if(num.includes("\.")){
+            event.preventDefault();
+            alert("Number of results must be an integer!");
+        }
+        else if(num.includes("-")){
+            event.preventDefault();
+            alert("Number of results must be a positive!");
+        }
+    }
+    else{
+        var num1 = document.forms["scraper"]["start_scrape"].value;
+        if (isNaN(num1)){
+            event.preventDefault();
+            alert("Starting ID must be a number!");
+        }
+        else if(num1.includes("\.")){
+            event.preventDefault();
+            alert("Starting ID must be an integer!");
+        }
+        else if(num1.includes("-")){
+            event.preventDefault();
+            alert("Starting ID must be an positive!");
+        }
+        var num2 = document.forms["scraper"]["end_scrape"].value;
+        if (isNaN(num2)){
+            event.preventDefault();
+            alert("Starting ID must be a number!");
+        }
+        else if(num2.includes("\.")){
+            event.preventDefault();
+            alert("Starting ID must be an integer!");
+        }
+        else if(num2.includes("-")){
+            event.preventDefault();
+            alert("Starting ID must be a positive!");
+        }
+    }
+}
