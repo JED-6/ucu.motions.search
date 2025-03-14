@@ -18,18 +18,18 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 
-class RelivantResults(Base):
-    __tablename__ = "relivant_results"
+class RelevantResults(Base):
+    __tablename__ = "relevant_results"
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"),primary_key=True)
     query_id: Mapped[int] = mapped_column(ForeignKey("searchquery.id"),primary_key=True)
     split_id: Mapped[int] = mapped_column(ForeignKey("split.id"),primary_key=True)
-    relivant: Mapped[Boolean] = mapped_column(Boolean,nullable=False)
+    relevant: Mapped[Boolean] = mapped_column(Boolean,nullable=False)
     method: Mapped[str] = mapped_column(String(20),nullable=True)
 
-    user:Mapped["User"] = relationship(back_populates="relivant")
-    search_query:Mapped["SearchQuery"] = relationship(back_populates="relivant")
-    split:Mapped["Split"] = relationship(back_populates="relivant")
+    user:Mapped["User"] = relationship(back_populates="relevant")
+    search_query:Mapped["SearchQuery"] = relationship(back_populates="relevant")
+    split:Mapped["Split"] = relationship(back_populates="relevant")
 
 
 class Motion(Base):
@@ -55,17 +55,17 @@ class Split(Base):
     content: Mapped[str] = mapped_column(Text,nullable=False,deferred=True)
     motion_id: Mapped[int] = mapped_column(ForeignKey("motion.id"))
     action: Mapped[str] = mapped_column(String(10))
-    relivant: Mapped[List["RelivantResults"]] = relationship(back_populates="split")
+    relevant: Mapped[List["RelevantResults"]] = relationship(back_populates="split")
     
 
 class User(UserMixin, Base):
     __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str] = mapped_column(String(25),nullable=False)
+    username: Mapped[str] = mapped_column(String(25),nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(250),nullable=False)
     salt: Mapped[str] = mapped_column(String(250),nullable=False)
     admin: Mapped[str] = mapped_column(Boolean,nullable=False)
-    relivant: Mapped[List["RelivantResults"]] = relationship(back_populates="user")
+    relevant: Mapped[List["RelevantResults"]] = relationship(back_populates="user")
     
     
 class SearchQuery(Base):
@@ -73,7 +73,7 @@ class SearchQuery(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     question: Mapped[str] = mapped_column(Text,nullable=False,deferred=True)
     split_id: Mapped[int] = mapped_column(Integer,nullable=True)
-    relivant: Mapped[List["RelivantResults"]] = relationship(back_populates="search_query")
+    relevant: Mapped[List["RelevantResults"]] = relationship(back_populates="search_query")
 
 def clear_motions_db():
     splits = db.session.execute(select(Split)).all()

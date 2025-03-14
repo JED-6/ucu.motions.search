@@ -45,9 +45,14 @@
                 {% if scraped %}
                     <p><strong>{{message}}</strong></p>
                     {% if missed|length >0 %}
-                        <p><strong>Unable to scrape motions:</strong></p>
+                        <p><strong>Failed to scrape motions:</strong></p>
                         <p><strong>{{missed}}</strong></p>
-                    {% else %}
+                    {% endif %}
+                    {% if blank|length >0 %}
+                        <p><strong>Motion pages blank:</strong></p>
+                        <p><strong>{{blank}}</strong></p>
+                    {% endif %}
+                    {% if missed|length == 0 and blank|length == 0 %}
                         <p><strong>All motions successfully scraped</strong></p>
                     {% endif %}
                 {% endif %}

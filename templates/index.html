@@ -83,13 +83,13 @@
                     </div>
                     <input type="submit" name="submit_buttom" value="Search Motions">
                 </form>
-                <form action="/relivance" method="POST" class="survey">
+                <form action="/relivence" method="POST" class="survey">
                     <table id="results_table">
                         <thead>
                             <tr>
                                 <th style="width:5%" >Relevant</th>
                                 <th onclick="sortResults(0)" class="header" title="Order by contents">Contents</th>
-                                <th onclick="sortResults(1)" class="header" style="width:5%"  title="Order by distance">Distance</th>
+                                <th onclick="sortResults(1)" class="header" style="width:5%"  title="Order by distance">Similarity</th>
                                 <th onclick="sortResults(2)" class="header" style="width:20%" title="Order by motion title">Motion Title</th>
                                 <th onclick="sortResults(3)" class="header" style="width:10%" title="Order by session">Session</th>
                                 <th onclick="sortResults(4)" class="header" style="width:5%" title="Order by action">Action</th>
@@ -98,7 +98,7 @@
                         <tbody>
                             {% for split in splits %}
                                 <tr>
-                                    <td style="text-align: center"><input type="checkbox" name="relivant" value="{{split[0]}}"></td>
+                                    <td style="text-align: center"><input type="checkbox" name="relevant" value="{{split[0]}}"></td>
                                     <td id="{{split[0]}}" onclick="expand_content('{{ split[0] }}')"  title="Click to expand">{{ split[2] }}</td>
                                     <td style="text-align: center">{{ split[1]|round(2) }}</td>
                                     <td><a href={{ split[4] }}>{{ split[5] }}</a></td>
@@ -108,7 +108,7 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    {% if relivant_submit %}
+                    {% if relevant_submit %}
                         <input type="submit" onclick="show_thankyou()" name="submit_buttom" value="Submit Relevant">
                     {% endif %}
                     {% if thank_you %}
