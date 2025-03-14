@@ -5,6 +5,7 @@ from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer, CrossEncoder
+import torch.nn as nn
 
 # given text tokenise, lemmatize and remove stopwords and any none alphabetical symbols
 def normalise_text(text):
@@ -44,7 +45,7 @@ def get_split_details(results,UCU_WEBSITE_URL):
     return results
 
 def initialise_cross_encoder(model_name):
-    model = CrossEncoder("cross-encoder/"+model_name)
+    model = CrossEncoder("cross-encoder/"+model_name,default_activation_function=nn.Sigmoid())
     return model
 
 # use the Cross-Encoder to find similar results to the query_sentence
@@ -63,7 +64,7 @@ def compare_cross_encoder(model,query_sentence,n_closest,actions,sessions,strip=
         splits = [s[1] for s in splits]
     # generate similarity scores
     pairs = [[query_sentence,s] for s in splits]
-    scores = model.predict(pairs,num_labels=1)
+    scores = model.predict(pairs)
     results = []
     for f in range(len(ids)):
         results += [[ids[f],scores[f]]]
@@ -109,9 +110,12 @@ def compare_bi_encoder(query_sentence,model,embeddings,n_closest,actions,session
     results = sorted(results, key=lambda x:x[1], reverse=True)
     return results[:n_closest]
 
-def initialise_tfidf():
+def initialise_tfidf(strip=False):
     all_splits = db.session.execute(select(Split.content)).all()
-    all_content = [split.content for split in all_splits]
+    if strip:
+        all_content = [strip_text(split.content) for split in all_splits]
+    else:
+        all_content = [split.content for split in all_splits]
     if len(all_content)==0:
         return False
     else:
@@ -120,10 +124,14 @@ def initialise_tfidf():
         return tfidf
 
 # generate vector for qurey_sentence and splits and calculate similarity scores
-def calc_tf_idf(tfidf,query_sentence,n_closest,actions,sessions):
+def calc_tf_idf(tfidf,query_sentence,n_closest,actions,sessions,strip=False):
     # limit search by action type and session
     query_splits = db.session.execute(select(Split.id,Split.content).join(Motion).where(Split.action.in_(actions),Motion.session.in_(sessions)).order_by(Split.id)).all()
-    query_content = [split.content for split in query_splits]
+    if strip:
+        query_sentence = strip_text(query_sentence)
+        query_content = [strip_text(split.content) for split in query_splits]
+    else:
+        query_content = [split.content for split in query_splits]
     splits_encodings = tfidf.transform(query_content)
     query_encoding = tfidf.transform([query_sentence])
     similarity = cosine_similarity(splits_encodings,query_encoding)

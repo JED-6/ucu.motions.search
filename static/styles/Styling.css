@@ -113,6 +113,14 @@ p.error {
   padding: 5px;
 }
 
+p.success {
+  border: solid green;
+  background-color: lightgreen;
+  border-radius: 5px;
+  border-width: 2px;
+  padding: 5px;
+}
+
 form.scraper input[type=text]{
   width:40px;
 }
@@ -123,10 +131,6 @@ form.scraper input[type=text]{
   margin-top: 0px;
   margin-right:0px;
   margin-left:0px;
-}
-
-#Thank_You{
-  display: none;
 }
 
 img{

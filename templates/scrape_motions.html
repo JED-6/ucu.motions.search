@@ -45,15 +45,17 @@
                 {% if scraped %}
                     <p><strong>{{message}}</strong></p>
                     {% if missed|length >0 %}
-                        <p><strong>Failed to scrape motions:</strong></p>
+                        <p class="error">Failed to scrape motions:</p>
                         <p><strong>{{missed}}</strong></p>
                     {% endif %}
                     {% if blank|length >0 %}
-                        <p><strong>Motion pages blank:</strong></p>
+                        <p class="error">Motion pages blank:</p>
                         <p><strong>{{blank}}</strong></p>
                     {% endif %}
                     {% if missed|length == 0 and blank|length == 0 %}
-                        <p><strong>All motions successfully scraped</strong></p>
+                        <div style="width: 200px;">
+                            <p class="success">All motions successfully scraped!</p>
+                        </div>
                     {% endif %}
                 {% endif %}
             {% endif %}

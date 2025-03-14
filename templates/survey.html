@@ -21,14 +21,6 @@
             {% endif %}
         </div>
         <h1>Survey</h1>
-        {% if admin %}
-            <form action="/make_questions" method="POST" class="query">
-                <input type="submit" name="submit_buttom" value="Generate Questions">
-            </form>
-            <br>
-            <br>
-            <br>
-        {% endif %}
         {% if not finished %}
             <p>Which of the following motions snippets are relevant to the following snippet?:</p>
             <p id="main_split_id"><strong>{{split_main}}</strong></p>

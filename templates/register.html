@@ -32,10 +32,13 @@
             <br>
             <input type="submit" name="register" value="Register">
             {% if username %}
-                <p>That username is already taken</p>
+                <p class="error">That username is already taken</p>
             {% endif %}
             {% if password %}
                 <p class="error">Those passwords don't match</p>
+            {% endif %}
+            {% if success %}
+                <p class="success">Successfully created new user!</p>
             {% endif %}
         </form>
     </body>

@@ -59,7 +59,9 @@ def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,START,END,clear_db=False)
             # make note of blank motion pages
             blank += [motion_num]
         # display to console progress
-        if completed <= math.floor(((motion_num-START)/(END-1-START))*10):
+        if completed <= math.floor(((motion_num-START)/(END-START))*10):
             completed += 1
-            print(math.floor(((motion_num-START)/(END-1-START))*100),"% complete ...")
+            print(math.floor(((motion_num-START)/(END-START))*100),"% complete ...")
+    else:
+        print("100% complete ...")
     return str(motions) + " motions scraped from UCU website", missed, blank

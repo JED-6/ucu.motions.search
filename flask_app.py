@@ -315,7 +315,7 @@ def survey():
                 # if not generate new SearchQuery by selecting a random split from the 2023-2024 session
                 split = db.session.execute(select(Split).join(Motion).where(Split.id.not_in(answered_ids),Motion.session=="2023-2024").order_by(func.random())).first()
                 if split is None:
-                    return render_template("survey.html",finished=True)
+                    return render_template("survey.html",user=is_user(),admin=is_admin(),finished=True)
                 else:
                     split = split[0]
                 query = SearchQuery(question=split.content,split_id=split.id)
@@ -389,11 +389,11 @@ def register():
                     user = User(id=id,username=username,password=password_crypt,salt=salt,admin=False)
                     db.session.add(user)
                     db.session.commit()
-                    return redirect("/")
+                    return render_template("register.html",user=is_user(),admin=is_admin(),success=True)
                 else:
-                    render_template("register.html",user=is_user(),admin=is_admin(),password=True)
+                    return render_template("register.html",user=is_user(),admin=is_admin(),password=True)
             else:
-                render_template("register.html",user=is_user(),admin=is_admin(),username=True)
+                return render_template("register.html",user=is_user(),admin=is_admin(),username=True)
         else:
             return render_template("register.html",user=is_user(),admin=is_admin())
     else:
@@ -405,4 +405,4 @@ def logout():
     return redirect("/")
 
 if __name__=="__main__":
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
