@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import select, func, text, Boolean, Text, String, ForeignKey, update, Integer
+from sqlalchemy import select, func, text, Boolean, Text, String, ForeignKey, update, Integer, Float
 from typing import List
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from sqlalchemy_utils import database_exists, create_database
@@ -26,6 +26,7 @@ class RelevantResults(Base):
     split_id: Mapped[int] = mapped_column(ForeignKey("split.id"),primary_key=True)
     relevant: Mapped[Boolean] = mapped_column(Boolean,nullable=False)
     method: Mapped[str] = mapped_column(String(20),nullable=True)
+    similarity: Mapped[float] = mapped_column(Float,nullable=True)
 
     user:Mapped["User"] = relationship(back_populates="relevant")
     search_query:Mapped["SearchQuery"] = relationship(back_populates="relevant")
@@ -53,6 +54,7 @@ class Split(Base):
     __tablename__ = "split"
     id: Mapped[int] = mapped_column(primary_key=True)
     content: Mapped[str] = mapped_column(Text,nullable=False,deferred=True)
+    nor_content: Mapped[str] = mapped_column(Text,nullable=False,deferred=True)
     motion_id: Mapped[int] = mapped_column(ForeignKey("motion.id"))
     action: Mapped[str] = mapped_column(String(10))
     relevant: Mapped[List["RelevantResults"]] = relationship(back_populates="split")

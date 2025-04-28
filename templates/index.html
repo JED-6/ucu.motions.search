@@ -71,6 +71,16 @@
                         {% endfor %}
                     </select>
                     <br>
+                    <label for="select_meeting">Select meeting:</label>
+                    <div name="select_meeting" style="margin-top: 5px;">
+                        {% for m in meetings %}
+                            <div class="long_options">
+                                <p>|</p>
+                                <input type="radio" name="meeting" value="{{m[0]}}" {% if m[1]%}checked{% endif %}>
+                                <label for="{{m[0]}}">{{m[0]}}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
                     <label for="action_options">Select which actions to search:</label>
                     <div name="action_options" style="margin-top: 5px;">
                         {% for a in actions %}

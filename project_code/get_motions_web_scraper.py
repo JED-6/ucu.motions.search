@@ -3,6 +3,8 @@ import requests
 from bs4 import BeautifulSoup
 from project_code.models import Motion, Split, db, clear_motions_db
 import project_code.split_motions as sm
+from project_code.sentence_similarity import strip_text
+from sqlalchemy import select
 
 def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,START,END,clear_db=False):
     if clear_db:
@@ -13,7 +15,12 @@ def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,START,END,clear_db=False)
     blank = []
     completed = 0
     motions = 0
-    id = 0
+    splits = db.session.execute(select(Split.id)).all()
+    splits = [s.id for s in splits]
+    if len(splits) > 0:
+        id = max(splits)+1
+    else:
+        id = 0
     print("Scraping Motions ...")
     for motion_num in range(START,END):
         # extract webpage using fixed initial URL and motion id number
@@ -34,7 +41,9 @@ def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,START,END,clear_db=False)
                             motion[att] = sm.get_motion(extract)
                             splits = sm.split_motion_action(motion[att])
                             for s in splits:
-                                split = Split(id=id,content=s[0],motion_id=motion_num,action=s[1])
+                                nor_split = strip_text(s[0])
+                                print()
+                                split = Split(id=id,content=s[0],motion_id=motion_num,nor_content=nor_split,action=s[1])
                                 db.session.add(split)
                                 id += 1
                         else:
@@ -60,8 +69,8 @@ def scrape_motions(UCU_WEBSITE_URL,UCU_WEBSITE_CLASSES,START,END,clear_db=False)
             blank += [motion_num]
         # display to console progress
         if completed <= math.floor(((motion_num-START)/(END-START))*10):
+            print(math.floor((completed)*10),"% complete ...", end='\r')
             completed += 1
-            print(math.floor(((motion_num-START)/(END-START))*100),"% complete ...")
     else:
         print("100% complete ...")
     return str(motions) + " motions scraped from UCU website", missed, blank

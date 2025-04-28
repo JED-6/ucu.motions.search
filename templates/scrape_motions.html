@@ -22,13 +22,11 @@
         <h1>Scrape Motions</h1>
         {% if admin %}
             {% if delete %}
-                {% if m_ids|length>0 %}
-                    <h2>Existing Motions Found</h2>
-                    <p>{{m_ids}}</p>
+                {% if m_ids>0 %}
+                    <h2>{{m_ids}} Existing Motions Found</h2>
                 {% endif %}
-                {% if s_ids|length>0 %}
-                    <h2>Existing Splits Found</h2>
-                    <p>{{s_ids}}</p>
+                {% if s_ids>0 %}
+                    <h2>{{s_ids}} Existing Splits Found</h2>
                 {% endif %}
                 <h2>Do you want to delete the above?:</h2>
                 <form action="/scrape_motions" method="POST" class="scraper">
@@ -40,20 +38,20 @@
                     <label for="start_scrape">Starting ID:</label>
                     <input type="text" name="start_scrape" placeholder="7925">
                     <label for="end_scrape">Final ID:</label>
-                    <input type="text" name="end_scrape" placeholder="10967">
+                    <input type="text" name="end_scrape" placeholder="10966">
                     <input type="submit" name="submit_buttom" value="Scrape Motions">
                 </form>
                 {% if scraped %}
                     <p><strong>{{message}}</strong></p>
-                    {% if missed|length >0 %}
+                    {% if missed >0 %}
                         <p class="error">Failed to scrape motions:</p>
                         <p><strong>{{missed}}</strong></p>
                     {% endif %}
-                    {% if blank|length >0 %}
+                    {% if blank >0 %}
                         <p class="error">Motion pages blank:</p>
                         <p><strong>{{blank}}</strong></p>
                     {% endif %}
-                    {% if missed|length == 0 and blank|length == 0 %}
+                    {% if missed == 0 and blank == 0 %}
                         <div style="width: 200px;">
                             <p class="success">All motions successfully scraped!</p>
                         </div>

@@ -23,7 +23,7 @@
         <h1>Survey</h1>
         {% if not finished %}
             <p>Which of the following motions snippets are relevant to the following snippet?:</p>
-            <p id="main_split_id"><strong>{{split_main}}</strong></p>
+            <p id="main_split_id">{{split_main}}</p>
             <p id="main_motion_id">{{motion_main}}</p>
             <form action="/survey" method="POST" class="query">
                 <select name="search_method" id = "search_method">
@@ -80,6 +80,7 @@
                 s_main = replace_special(s_main);
                 m_main = m_main.replaceAll(s_main,'<span style="color:red;font-weight:bold;">'+s_main+"</span>");
                 document.getElementById("main_motion_id").innerHTML = m_main;
+                document.getElementById("main_split_id").innerHTML = "<strong>"+s_main+"</strong>";
             </script>
         {% endif %}
     </body>
